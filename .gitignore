@@ -52,3 +52,9 @@ tags
 .vim
 
 # End of https://www.gitignore.io/api/vim
+
+# Local PaCRD configuration file
+pacrd.yaml
+
+# Release manifests that shouldn't be committed
+pacrd-*.yaml

@@ -14,7 +14,7 @@ metadata:
   name: core-entitlements-for-env
 spec:
   description: Foo bar baz
-  application: core-entitlements
+  application: &app-name core-entitlements
   parameterConfig:
     - name: canary_deploy
       default: "false"
@@ -90,7 +90,7 @@ spec:
         type: expression
       findArtifactsFromResource:
         account: "hlp-eks-spe-${parameters.env}-navnonprod-pdx"
-        app: core-entitlements
+        app: &app-name
         cloudProvider: kubernetes
         location: entitlements
         manifestName: deployment eks-spe-${parameters.env}-entitelements-core-entitelements
@@ -104,7 +104,7 @@ spec:
         type: expression
       deleteManifest:
         account: "help-eks-spe-${parameters.env}-navnonprod-pdx"
-        app: core-entitelements
+        app: &app-name
         cloudProvider: kubernetes
         location: entitelements
         manifestName: "deployment eks-spe-${parameters.env}-entitelements-core-entitlements-baseline"
@@ -160,8 +160,16 @@ spec:
         completeOtherBranchesThenFail: false
         continuePipeline: true
         failPipeline: false
-        manifestArtifactAccount: embeddedArtifact
-        manifestArtifactId: "b5ccd28c-faf3-4d64-b119-1471b8f8d070"
+        manifests:
+          - |
+            apiVersion: v1
+            kind: Pod
+            metadata:
+              name: test-pod
+            spec:
+              containers:
+                - name: test
+                  image: nginx:1.17
         moniker:
           app: core-entitelements
         skipExpressionEvaluation: true

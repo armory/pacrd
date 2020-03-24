@@ -1,37 +1,44 @@
 apiVersion: pacrd.armory.spinnaker.io/v1alpha1
+kind: Application
+metadata:
+  name: deploy-manifest-test
+spec:
+  email: fernando.freire@armory.io
+  description: Testing the Deploy Manifest stage.
+---
+apiVersion: pacrd.armory.spinnaker.io/v1alpha1
 kind: Pipeline
 metadata:
-  name: simpleminds
+  name: deploy-manifest-test
 spec:
   description: Foo bar baz
-  application: woohoo
+  application: &app-name deploy-manifest-test
   stages:
-    - type: BakeManifest
-      bakeManifest:
-        name: Name isn't being set for some reason.
-        evaluateOverrideExpressions: false
-        outputName: bread
-        expectedArtifacts: []
-        inputArtifacts: []
-        templateRenderer: helm2
-        refId: "1"
-    - type: ManualJudgment
-      manualJudgment:
-        name: Don't You, Forget About Me
-        comments: Hey, hey, hey, heyyyyy
+    - type: DeployManifest
+      name: Deploy Sample Pods
+      refId: "1"
+      deployManifest:
+        source: text
+        account: kubernetes
+        cloudProvider: kubernetes
+        completeOtherBranchesThenFail: false
+        continuePipeline: true
         failPipeline: false
-        instructions: DON'T PANIC, COVID-19 UP IN YOUR BUSINESS
-        judgmentInputs:  # No, this key is not spelled incorrectly
-          - value: I'll never forget you, Dawson
-          - value: Don't be such a snob, Dawson!
-        # TODO this should really be calculated by the controller
-        refId: "2"
-        requisiteStageRefIds: [ "1" ]
-    #- type: findArtifactFromResource
-      #name: Find the Bread
-      #account: "hlp-eks-spe-navnonprod-pdx"
-      #app: woohoo
-      #cloudProvider: kubernetes
-      #location: entitlements
-      #manifestName: "deployment eks-spe-entitlements-core-entitlements"
-      #mode: static
+        manifests:
+          - |
+            apiVersion: v1
+            kind: Pod
+            metadata:
+              name: test-pod
+            spec:
+              containers:
+                - name: test
+                  image: nginx:1.17
+        moniker:
+          app: *app-name
+    - type: ManualJudgment
+      name: Did it work?
+      refId: "2"
+      requisiteStageRefIds: [ "1" ]
+      manualJudgment:
+        failPipeline: true

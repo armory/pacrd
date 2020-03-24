@@ -95,10 +95,10 @@ func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	// First, attempt to find the Spinnaker app.
 	// TODO move to GetOrCreateApplicationFromSpinnaker fn
 	_, spinErr := r.SpinnakerClient.GetApplication(req.Name)
-	var ue *plank.ErrUnsupportedStatusCode
+	var fr *plank.FailedResponse
 	if spinErr != nil {
 		// If we didn't find the Spinnaker app, create it.
-		if errors.As(spinErr, &ue) && ue.Code == 404 {
+		if errors.As(spinErr, &fr) && fr.StatusCode == 404 {
 			logger.Info("did not find application in Spinnaker, creating...")
 			spinApp := app.ToSpinApplication()
 			spinErr = r.SpinnakerClient.CreateApplication(&spinApp)
@@ -171,8 +171,8 @@ func (r *ApplicationReconciler) deleteApplication(app pacrdv1alpha1.Application)
 
 	if containsString(finalizers, AppFinalizerName) {
 		if err := r.SpinnakerClient.DeleteApplication(app.Name); err != nil {
-			var ue *plank.ErrUnsupportedStatusCode
-			if errors.As(err, &ue) && ue.Code == 404 {
+			var fr *plank.FailedResponse
+			if errors.As(err, &fr) && fr.StatusCode == 404 {
 				// This situation implies the application was already deleted, either
 				// by something else or a previously failed delete reconcile. Either
 				// way we only care that it's gone, so do nothing here.

@@ -7,6 +7,7 @@ import (
 
 	"github.com/fatih/structs"
 	"github.com/iancoleman/strcase"
+	"gopkg.in/yaml.v3"
 )
 
 // StageUnionType is an alias for the type name of the pipeline's stage.
@@ -29,41 +30,58 @@ type StageUnion struct {
 
 	// +optional
 	StageEnabled *StageEnabled `json:"stageEnabled,omitempty"`
-	// +optional
-	BakeManifest `json:"bakeManifest,omitempty"`
 	//BakeManifest renders a Kubernetes manifest to be applied to a target cluster at a later stage. The manifests can be rendered using HELM2 or Kustomize.
 	// +optional
-	FindArtifactsFromResource `json:"findArtifactsFromResource,omitempty"`
+	BakeManifest `json:"bakeManifest,omitempty"`
 	// +optional
-	ManualJudgment `json:"manualJudgment,omitempty"`
+	FindArtifactsFromResource `json:"findArtifactsFromResource,omitempty"`
 	//ManualJudgment stage pauses pipeline execution until there is approval from a human through the UI or API call that allows the execution to proceed.
 	// +optional
-	DeleteManifest `json:"deleteManifest,omitempty"`
+	ManualJudgment `json:"manualJudgment,omitempty"`
 	//DeleteManifest removes a manifest or a group of manifests from a target Spinnaker cluster based on names, deployment version or labels.
 	// +optional
-	CheckPreconditions `json:"checkPreconditions,omitempty"`
+	DeleteManifest `json:"deleteManifest,omitempty"`
 	// CheckPreconditions allows you to test values from the pipeline's context to determine wether to proceed, pause, or terminate the pipeline execution
 	// +optional
-	DeployManifest `json:"deployManifest,omitempty"`
+	CheckPreconditions `json:"checkPreconditions,omitempty"`
 	// DeployManifest deploys a Kubernetes manifest to a target Kubernetes cluster. Spinnaker will periodically check the status of the manifest to make sure the manifest converges on the target cluster until it reaches a timeout
+	// +optional
+	DeployManifest `json:"deployManifest,omitempty"`
 }
 
 // DeployManifest TODO
 // FIXME: trafficManagement, relationships
 type DeployManifest struct {
-	Account                       string           `json:"account"`
-	CloudProvider                 string           `json:"cloudProvider"`
-	CompleteOtherBranchesThenFail bool             `json:"completeOtherBranchesThenFail"`
-	ContinuePipeline              bool             `json:"continuePipeline"`
-	FailPipeline                  bool             `json:"failPipeline"`
-	ManifestArtifactAccount       string           `json:"manifestArtifactAccount"`
-	ManifestArtifactID            string           `json:"manifestArtifactId"`
-	Moniker                       `json:"moniker"` // FIXME: should be calculated
+	Account                       string `json:"account"`
+	CloudProvider                 string `json:"cloudProvider"`
+	CompleteOtherBranchesThenFail bool   `json:"completeOtherBranchesThenFail"`
+	ContinuePipeline              bool   `json:"continuePipeline"`
+	FailPipeline                  bool   `json:"failPipeline"`
 	// +optional
-	SkipExpressionEvaluation bool   `json:"skipExpressionEvaluation,omitempty"`
-	Source                   string `json:"source"`
+	ManifestArtifactAccount string `json:"manifestArtifactAccount,omitempty"`
+	// +optional
+	ManifestArtifactID string `json:"manifestArtifactId,omitempty"`
+	// +optional
+	Manifests []string         `json:"manifests,omitempty"` // FIXME
+	Moniker   `json:"moniker"` // FIXME: should be calculated
+	// +optional
+	SkipExpressionEvaluation bool `json:"skipExpressionEvaluation,omitempty"`
+	// +optional
+	Source Source `json:"source,omitempty"`
 }
 
+// Source represents the kind of DeployManifest stage is defined.
+// +kubebuilder:validation:Enum=text;artifact
+type Source string
+
+const (
+	// TextManifest represents inline manifests in the DeployInlineManifest stage.
+	TextManifest Source = "text"
+	// ArtifactManifest represents manifests that live outside the stage.
+	ArtifactManifest Source = "artifact"
+)
+
+// Moniker TODO
 type Moniker struct {
 	App string `json:"app"`
 }
@@ -309,6 +327,7 @@ func (su StageUnion) ToSpinnakerStage() (map[string]interface{}, error) {
 		crd := crdStage.(BakeManifest)
 		// If this value is lowercase the Spinnaker API apparently discards it.
 		crd.TemplateRenderer = strings.ToUpper(crd.TemplateRenderer)
+
 		s := structs.New(crd)
 		s.TagName = "json"
 		mapified = s.Map()
@@ -332,6 +351,21 @@ func (su StageUnion) ToSpinnakerStage() (map[string]interface{}, error) {
 		s := structs.New(crdStage.(DeployManifest))
 		s.TagName = "json"
 		mapified = s.Map()
+
+		manifests := mapified["manifests"].([]string)
+		if len(manifests) > 0 {
+			var finalManifests []map[string]interface{}
+
+			for _, stringManifest := range manifests {
+				manifest := make(map[string]interface{})
+				err := yaml.Unmarshal([]byte(stringManifest), manifest)
+				if err != nil {
+					return mapified, err
+				}
+				finalManifests = append(finalManifests, manifest)
+			}
+			mapified["manifests"] = finalManifests
+		}
 	}
 
 	if mapified == nil {

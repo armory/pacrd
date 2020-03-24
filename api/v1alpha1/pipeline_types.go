@@ -129,7 +129,7 @@ func init() {
 }
 
 // ToSpinnakerPipeline converts a CRD to a value that can be sent to Spinnaker.
-func (p Pipeline) ToSpinnakerPipeline() plank.Pipeline {
+func (p Pipeline) ToSpinnakerPipeline() (plank.Pipeline, error) {
 	plankPipe := plank.Pipeline{
 		ID:                   p.Status.ID,
 		Name:                 p.GetObjectMeta().GetName(),
@@ -160,11 +160,14 @@ func (p Pipeline) ToSpinnakerPipeline() plank.Pipeline {
 
 	// TODO this doesn't work yet
 	for _, s := range p.Spec.Stages {
-		renderedStage, _ := s.ToSpinnakerStage()
+		renderedStage, err := s.ToSpinnakerStage()
+		if err != nil {
+			return plank.Pipeline{}, err
+		}
 		plankPipe.Stages = append(plankPipe.Stages, renderedStage)
 	}
 
-	return plankPipe
+	return plankPipe, nil
 }
 
 // ShouldDelete tells you if the current pipeline should be deleted or not.

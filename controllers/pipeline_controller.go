@@ -173,7 +173,19 @@ func (r *PipelineReconciler) createPipeline(pipeline pacrdv1alpha1.Pipeline) err
 	// Note that passing the empty string here is denoting that the pipeline
 	// doesn't have a valid ID. It will be created according to the app name
 	// provided in the spec.
-	pipe := pipeline.ToSpinnakerPipeline()
+	pipe, err := pipeline.ToSpinnakerPipeline()
+	if err != nil {
+		// Let the user know via describe calls that something went wrong.
+		r.Recorder.Eventf(
+			&pipeline,
+			"Warning",
+			string(pacrdv1alpha1.PipelineCreationFailed),
+			err.Error(),
+		)
+
+		return err
+	}
+
 	if err := r.SpinnakerClient.UpsertPipeline(pipe, ""); err != nil {
 
 		err = spinnaker.UnwrapFrontFiftyBadResponse(err)
@@ -201,7 +213,18 @@ func (r *PipelineReconciler) updatePipeline(ctx context.Context, pipeline pacrdv
 
 	r.updatePipelineStatus(pipeline, upstreamPipeline, ctx)
 
-	if err := r.SpinnakerClient.UpsertPipeline(pipeline.ToSpinnakerPipeline(), upstreamPipeline.ID); err != nil {
+	plankPipe, err := pipeline.ToSpinnakerPipeline()
+	if err != nil {
+		r.Recorder.Eventf(
+			&pipeline,
+			"Warning",
+			string(pacrdv1alpha1.PipelineUpdateFailed),
+			err.Error(),
+		)
+		return err
+
+	}
+	if err := r.SpinnakerClient.UpsertPipeline(plankPipe, upstreamPipeline.ID); err != nil {
 		err = spinnaker.UnwrapFrontFiftyBadResponse(err)
 
 		r.Recorder.Eventf(
@@ -239,7 +262,11 @@ func (r *PipelineReconciler) deletePipeline(pipeline pacrdv1alpha1.Pipeline) err
 	finalizers := pipeline.GetObjectMeta().GetFinalizers()
 
 	if containsString(finalizers, PipelineFinalizerName) {
-		if err := r.SpinnakerClient.DeletePipeline(pipeline.ToSpinnakerPipeline()); err != nil {
+		plankPipe, err := pipeline.ToSpinnakerPipeline()
+		if err != nil {
+			return err
+		}
+		if err := r.SpinnakerClient.DeletePipeline(plankPipe); err != nil {
 			var ue *plank.ErrUnsupportedStatusCode
 			if errors.As(err, &ue) && ue.Code == 404 {
 				// This is an acceptable error, do nothing here and continue on to

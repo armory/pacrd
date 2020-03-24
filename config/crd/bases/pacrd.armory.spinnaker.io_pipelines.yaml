@@ -156,10 +156,9 @@ spec:
                   no longer render correctly in UI'
                 properties:
                   bakeManifest:
-                    description: 'BakeManifest represents a bake manifest stage in
-                      Spinnaker. NOTE: I suspect this only supports `helm2` style
-                      deployments right now. NOTE: notifications currently not supported
-                      for this stage.'
+                    description: BakeManifest renders a Kubernetes manifest to be
+                      applied to a target cluster at a later stage. The manifests
+                      can be rendered using HELM2 or Kustomize.
                     properties:
                       comments:
                         type: string
@@ -296,9 +295,9 @@ spec:
                         type: string
                     type: object
                   checkPreconditions:
-                    description: DeleteManifest removes a manifest or a group of manifests
-                      from a target Spinnaker cluster based on names, deployment version
-                      or labels.
+                    description: CheckPreconditions allows you to test values from
+                      the pipeline's context to determine wether to proceed, pause,
+                      or terminate the pipeline execution
                     properties:
                       preconditions:
                         items:
@@ -326,9 +325,9 @@ spec:
                         type: array
                     type: object
                   deleteManifest:
-                    description: ManualJudgment stage pauses pipeline execution until
-                      there is approval from a human through the UI or API call that
-                      allows the execution to proceed.
+                    description: DeleteManifest removes a manifest or a group of manifests
+                      from a target Spinnaker cluster based on names, deployment version
+                      or labels.
                     properties:
                       account:
                         type: string
@@ -358,9 +357,10 @@ spec:
                     - mode
                     type: object
                   deployManifest:
-                    description: CheckPreconditions allows you to test values from
-                      the pipeline's context to determine wether to proceed, pause,
-                      or terminate the pipeline execution
+                    description: DeployManifest deploys a Kubernetes manifest to a
+                      target Kubernetes cluster. Spinnaker will periodically check
+                      the status of the manifest to make sure the manifest converges
+                      on the target cluster until it reaches a timeout
                     properties:
                       account:
                         type: string
@@ -376,7 +376,12 @@ spec:
                         type: string
                       manifestArtifactId:
                         type: string
+                      manifests:
+                        items:
+                          type: string
+                        type: array
                       moniker:
+                        description: Moniker TODO
                         properties:
                           app:
                             type: string
@@ -386,6 +391,11 @@ spec:
                       skipExpressionEvaluation:
                         type: boolean
                       source:
+                        description: Source represents the kind of DeployManifest
+                          stage is defined.
+                        enum:
+                        - text
+                        - artifact
                         type: string
                     required:
                     - account
@@ -393,15 +403,11 @@ spec:
                     - completeOtherBranchesThenFail
                     - continuePipeline
                     - failPipeline
-                    - manifestArtifactAccount
-                    - manifestArtifactId
                     - moniker
-                    - source
                     type: object
                   findArtifactsFromResource:
-                    description: BakeManifest renders a Kubernetes manifest to be
-                      applied to a target cluster at a later stage. The manifests
-                      can be rendered using HELM2 or Kustomize.
+                    description: FindArtifactsFromResource represents the stage of
+                      the same name in Spinnaker.
                     properties:
                       account:
                         type: string
@@ -417,7 +423,9 @@ spec:
                         type: string
                     type: object
                   manualJudgment:
-                    description: ManualJudgment TODO description
+                    description: ManualJudgment stage pauses pipeline execution until
+                      there is approval from a human through the UI or API call that
+                      allows the execution to proceed.
                     properties:
                       comments:
                         type: string

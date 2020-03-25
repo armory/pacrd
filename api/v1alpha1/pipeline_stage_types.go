@@ -11,7 +11,7 @@ import (
 )
 
 // StageUnionType is an alias for the type name of the pipeline's stage.
-// +kubebuilder:validation:Enum=BakeManifest;FindArtifactsFromResource;ManualJudgment;DeleteManifest;CheckPreconditions;DeployManifest
+// +kubebuilder:validation:Enum=BakeManifest;FindArtifactsFromResource;ManualJudgment;DeleteManifest;CheckPreconditions;DeployManifest;Webhook;
 type StageUnionType string
 
 // StageUnion is a union type that encompasses strongly typed stage defnitions.
@@ -47,6 +47,9 @@ type StageUnion struct {
 	// DeployManifest deploys a Kubernetes manifest to a target Kubernetes cluster. Spinnaker will periodically check the status of the manifest to make sure the manifest converges on the target cluster until it reaches a timeout
 	// +optional
 	DeployManifest `json:"deployManifest,omitempty"`
+	//Webhook allows you to make quick API calls to an external system as part of a pipeline
+	// +optional
+	Webhook `json:"webhook,omitempty"`
 }
 
 // DeployManifest TODO
@@ -314,6 +317,68 @@ type Jitter struct {
 	SkipManual bool `json:"skipManual,omitempty"`
 }
 
+
+// StatusUrlResolution will poll a status url to determine the progress of the stage.
+// +kubebuilder:validation:Enum=locationHeader;getMethod;webhookResponse
+type StatusUrlResolution string
+
+// Webhook represents a webhook stage in Spinnaker.
+// NOTE: I suspect this only supports `helm2` style deployments right now.
+// NOTE: notifications currently not supported for this stage.
+type Webhook struct {
+	// +optional
+	Comments string `json:"comments,omitempty"`
+	// +optional
+	FailOnFailedExpressions bool `json:"failOnFailedExpressions,omitempty"`
+	// +optional
+	ExpectedArtifacts           []Artifact          `json:"expectedArtifacts,omitempty"`
+	// +optional
+	RestrictExecutionDuringTimeWindow bool `json:"restrictExecutionDuringTimeWindow,omitempty"`
+	// +optional
+	RestrictedExecutionWindow `json:"restrictedExecutionWindow,omitempty"`
+	// +optional
+	SkipWindowText string `json:"skipWindowText,omitempty"`
+	// +optional
+	StageEnabled `json:"stageEnabled,omitempty"`
+	// +optional
+	CancelEndpoint string `json:"cancelEndpoint,omitempty"`
+	// +optional
+	CancelMethod string `json:"cancelMethod,omitempty"`
+	//+optional
+	CancelPayload string `json:"cancelPayload,omitempty"`
+	//+optional
+	CanceledStatuses string `json:"canceledStatuses,omitempty"`
+	//+optional
+	CustomHeaders string `json:"customHeaders,omitempty"`
+	WebhookMethod string `json:"method,omitempty"`
+	Name string `json:"name,omitempty"`
+	//+optional
+	Payload string `json:"payload,omitempty"`
+	//+optional
+	ProgressJsonPath string `json:"progressJsonPath,omitempty"`
+	//+optional
+	RetryStatusCodes []int `json:"retryStatusCodes,omitempty"`
+	//+optional
+	FailFastStatusCodes []int `json:"failFastStatusCodes,omitempty"`
+	//+optional
+	StatusJsonPath string `json:"statusJsonPath,omitempty"`
+	//+optional
+	StatusUrlResolution `json:"statusUrlResolution,omitempty"`
+	//+optional
+	SuccessStatuses string `json:"successStatuses,omitempty"`
+	//+optional
+	TerminalStatuses string `json:"terminalStatuses,omitempty"`
+	Type string `json:"type,omitempty"`
+	Url string `json:"url,omitempty"`
+	//+optional
+	WaitBeforeMonitor string `json:"waitBeforeMonitor,omitempty"`
+	//+optional
+	WaitForCompletion bool `json:"waitForCompletion,omitempty"`
+	//+optional
+	StatusUrlJsonPath string `json:"statusUrlJsonPath,omitempty"`
+}
+
+
 // ToSpinnakerStage TODO description
 func (su StageUnion) ToSpinnakerStage() (map[string]interface{}, error) {
 	v := reflect.Indirect(reflect.ValueOf(&su))
@@ -366,6 +431,24 @@ func (su StageUnion) ToSpinnakerStage() (map[string]interface{}, error) {
 			}
 			mapified["manifests"] = finalManifests
 		}
+	case "Webhook":
+		s := structs.New(crdStage.(Webhook))
+		s.TagName = "json"
+		mapified = s.Map()
+
+		err := rewriteStringValueFromMapToMapInterface("payload",mapified)
+		if err != nil {
+			return mapified, err
+		}
+		err = rewriteStringValueFromMapToMapInterface("cancelPayload",mapified)
+		if err != nil {
+			return mapified, err
+		}
+		err = rewriteStringValueFromMapToMapInterface("customHeaders",mapified)
+		if err != nil {
+			return mapified, err
+		}
+
 	}
 
 	if mapified == nil {
@@ -385,4 +468,22 @@ func (su StageUnion) ToSpinnakerStage() (map[string]interface{}, error) {
 	}
 
 	return mapified, nil
+}
+
+func rewriteStringValueFromMapToMapInterface(field string, mapified map[string]interface{})  error {
+	fieldString, ok := mapified[field].(string)
+	if ok {
+		payloadMap,err := stringToMapInterface(fieldString)
+		if err != nil {
+			return err
+		}
+		mapified[field] = payloadMap
+	}
+	return nil
+}
+
+func stringToMapInterface(stringToConvert string) (interface{}, error) {
+	valuesMap := make(map[string]interface{})
+	err := yaml.Unmarshal([]byte(stringToConvert), valuesMap)
+	return valuesMap, err
 }

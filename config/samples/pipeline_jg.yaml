@@ -1,0 +1,76 @@
+apiVersion: pacrd.armory.spinnaker.io/v1alpha1
+kind: Application
+metadata:
+  name: deploy-manifest-test-jossue
+spec:
+  email: fernando.freire@armory.io
+  description: Testing the Deploy Manifest stage.
+---
+apiVersion: pacrd.armory.spinnaker.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: deploy-manifest-test-jossue
+spec:
+  description: Foo bar baz
+  application: &app-name deploy-manifest-test-jossue
+  stages:
+    - type: DeployManifest
+      name: Deploy Sample Pods
+      refId: "1"
+      deployManifest:
+        source: text
+        account: kubernetes
+        cloudProvider: kubernetes
+        completeOtherBranchesThenFail: false
+        continuePipeline: true
+        failPipeline: false
+        manifests:
+          - |
+            apiVersion: v1
+            kind: Pod
+            metadata:
+              name: test-pod
+            spec:
+              containers:
+                - name: test
+                  image: nginx:1.17
+        moniker:
+          app: *app-name
+    - type: ManualJudgment
+      name: Did it work?
+      refId: "2"
+      requisiteStageRefIds: [ "1" ]
+      manualJudgment:
+        failPipeline: true
+    - type: Webhook
+      name: Please work
+      refId: "3"
+      requisiteStageRefIds: [ "2" ]
+      webhook:
+        cancelEndpoint: cancellation url
+        cancelMethod: POST
+        cancelPayload: |
+          cancelation: payload
+        canceledStatuses: CANCELED, CANCEL
+        customHeaders: |
+          customheader: customvalue
+          customheader2: customalue2
+        # "isNew": true,
+        method: POST
+        name: Webhook stage name
+        payload: |
+          test: payloadtest
+          statuscode: 200
+        progressJsonPath: $.buildInfo.status
+        failFastStatusCodes: [ 404, 418 ]
+        retryStatusCodes: [ 404, 418 ]
+        statusJsonPath: $.buildInfo.status
+        statusUrlResolution: webhookResponse
+        statusUrlJsonPath: http://test
+        successStatuses: SUCCESS, OK
+        terminalStatuses: TERMINAL, FINISHED
+        type: webhook
+        url: webhook url
+        waitBeforeMonitor: "1"
+        waitForCompletion: true
+        comments: This is a test for weekhooks

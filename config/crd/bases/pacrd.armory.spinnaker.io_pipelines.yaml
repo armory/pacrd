@@ -639,8 +639,6 @@ spec:
                         type: boolean
                       method:
                         type: string
-                      name:
-                        type: string
                       payload:
                         type: string
                       progressJsonPath:
@@ -713,8 +711,6 @@ spec:
                       successStatuses:
                         type: string
                       terminalStatuses:
-                        type: string
-                      type:
                         type: string
                       url:
                         type: string

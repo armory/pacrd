@@ -323,7 +323,6 @@ type Jitter struct {
 type StatusUrlResolution string
 
 // Webhook represents a webhook stage in Spinnaker.
-// NOTE: I suspect this only supports `helm2` style deployments right now.
 // NOTE: notifications currently not supported for this stage.
 type Webhook struct {
 	// +optional
@@ -351,7 +350,6 @@ type Webhook struct {
 	//+optional
 	CustomHeaders string `json:"customHeaders,omitempty"`
 	WebhookMethod string `json:"method,omitempty"`
-	Name string `json:"name,omitempty"`
 	//+optional
 	Payload string `json:"payload,omitempty"`
 	//+optional
@@ -368,7 +366,6 @@ type Webhook struct {
 	SuccessStatuses string `json:"successStatuses,omitempty"`
 	//+optional
 	TerminalStatuses string `json:"terminalStatuses,omitempty"`
-	Type string `json:"type,omitempty"`
 	Url string `json:"url,omitempty"`
 	//+optional
 	WaitBeforeMonitor string `json:"waitBeforeMonitor,omitempty"`
@@ -471,8 +468,7 @@ func (su StageUnion) ToSpinnakerStage() (map[string]interface{}, error) {
 }
 
 func rewriteStringValueFromMapToMapInterface(field string, mapified map[string]interface{})  error {
-	fieldString, ok := mapified[field].(string)
-	if ok {
+	if fieldString, ok := mapified[field].(string); ok {
 		payloadMap,err := stringToMapInterface(fieldString)
 		if err != nil {
 			return err
@@ -482,7 +478,7 @@ func rewriteStringValueFromMapToMapInterface(field string, mapified map[string]i
 	return nil
 }
 
-func stringToMapInterface(stringToConvert string) (interface{}, error) {
+func stringToMapInterface(stringToConvert string) (map[string]interface{}, error) {
 	valuesMap := make(map[string]interface{})
 	err := yaml.Unmarshal([]byte(stringToConvert), valuesMap)
 	return valuesMap, err

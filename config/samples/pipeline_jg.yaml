@@ -55,9 +55,7 @@ spec:
         customHeaders: |
           customheader: customvalue
           customheader2: customalue2
-        # "isNew": true,
         method: POST
-        name: Webhook stage name
         payload: |
           test: payloadtest
           statuscode: 200
@@ -69,7 +67,6 @@ spec:
         statusUrlJsonPath: http://test
         successStatuses: SUCCESS, OK
         terminalStatuses: TERMINAL, FINISHED
-        type: webhook
         url: webhook url
         waitBeforeMonitor: "1"
         waitForCompletion: true

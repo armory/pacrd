@@ -1,0 +1,66 @@
+#DeleteManifest
+apiVersion: pacrd.armory.spinnaker.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: pacrd-deletemanifest-samples
+spec:
+  description: Samples for DeleteManifest
+  application: &app-name pacrd-pipeline-stages-samples
+  stages:
+    - type: DeleteManifest
+      name: Static target
+      refId: "1"
+      deleteManifest:
+        account: text
+        app: *app-name
+        cloudProvider: kubernetes
+        location: jossuegamez
+        mode: static
+        kind: apiService
+        targetName: testingName
+        options:
+          cascading: true
+          gracePeriodSeconds: 60
+    - type: DeleteManifest
+      name: Dynamic target
+      refId: "2"
+      requisiteStageRefIds: [ "1" ]
+      deleteManifest:
+        account: kubernetes
+        app: *app-name
+        cloudProvider: kubernetes
+        location: jossuegamez
+        mode: dynamic
+        cluster: test-cluster
+        kind: apiService
+        criteria: newest
+        options:
+          cascading: true
+          gracePeriodSeconds: 60
+    - type: DeleteManifest
+      name: Match by labels
+      refId: "3"
+      requisiteStageRefIds: [ "2" ]
+      deleteManifest:
+        account: kubernetes
+        app: *app-name
+        cloudProvider: kubernetes
+        location: jossuegamez
+        mode: label
+        kinds: [ "apiService", "clusterRoleBinding" ]
+        labelSelectors:
+          selectors:
+            - key: testkey
+              kind: EQUALS
+              values:
+                - value1
+                - value2
+            - key: testkey2
+              kind: NOT_EXISTS
+              values:
+                - value1
+                - value2
+        options:
+          cascading: true
+          gracePeriodSeconds: 60
+        

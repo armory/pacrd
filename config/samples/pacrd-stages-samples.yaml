@@ -1,0 +1,69 @@
+apiVersion: pacrd.armory.spinnaker.io/v1alpha1
+kind: Application
+metadata:
+  name: &app-name pacrd-pipeline-stages-samples
+spec:
+  email: jossue.gamez@armory.io
+  description: Samples for Delete Manifest.
+---
+#DeleteManifest
+apiVersion: pacrd.armory.spinnaker.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: pacrd-deletemanifest-samples
+spec:
+  description: Samples for DeleteManifest
+  application: pacrd-pipeline-stages-samples
+  stages:
+    - type: DeleteManifest
+      name: Static target
+      refId: "1"
+      deleteManifest:
+        account: text
+        app: kubernetes
+        cloudProvider: kubernetes
+        location: jossuegamez
+        mode: static
+        kind: apiService
+        targetName: testingName
+        options:
+          cascading: true
+          gracePeriodSeconds: 60
+---
+#Webhook
+apiVersion: pacrd.armory.spinnaker.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: pacrd-webhook-samples
+spec:
+  description: Samples for Webhooks
+  application: pacrd-pipeline-stages-samples
+  stages:
+    - type: Webhook
+      name: Please work
+      refId: "1"
+      webhook:
+        cancelEndpoint: cancellation url
+        cancelMethod: POST
+#        cancelPayload: |
+#          cancelation: payload
+        canceledStatuses: CANCELED, CANCEL
+        customHeaders: |
+          customheader: customvalue
+          customheader2: customalue2
+        method: POST
+        payload: |
+          test: payloadtest
+          statuscode: 200
+        progressJsonPath: $.buildInfo.status
+        failFastStatusCodes: [ 404, 418 ]
+        retryStatusCodes: [ 404, 418 ]
+        statusJsonPath: $.buildInfo.status
+        statusUrlResolution: webhookResponse
+        statusUrlJsonPath: http://test
+        successStatuses: SUCCESS, OK
+        terminalStatuses: TERMINAL, FINISHED
+        url: webhook url
+        waitBeforeMonitor: "1"
+        waitForCompletion: true
+        comments: This is a test for weekhooks

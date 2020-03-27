@@ -107,15 +107,67 @@ type Context struct {
 	FailureMessage *string `json:"failureMessage,omitempty"`
 }
 
+//This comes from the Object spinnakerKindMap in call: http://localhost:8084/credentials?expand=true
+//Also this can be found in class  /clouddriver/clouddriver-kubernetes-v2/src/main/java/com/netflix/spinnaker/clouddriver/kubernetes/v2/description/manifest/KubernetesKind.java
+// +kubebuilder:validation:Enum=apiService;clusterRole;clusterRoleBinding;configMap;controllerRevision;cronJob;customResourceDefinition;daemonSet;deployment;event;horizontalpodautoscaler;ingress;job;limitRange;mutatingWebhookConfiguration;namespace;networkPolicy;persistentVolume;persistentVolumeClaim;pod;podDisruptionBudget;podPreset;podSecurityPolicy;replicaSet;role;roleBinding;secret;service;serviceAccount;statefulSet;storageClass;validatingWebhookConfiguration
+type SpinnakerKind string
+
+//Not sure where these values are in the service, need to find more but for the moment this are all possible
+// +kubebuilder:validation:Enum=dynamic;label;static;
+type DeleteManifestMode string
+
+//These values can be found in: /clouddriver/clouddriver-kubernetes-v2/src/main/java/com/netflix/spinnaker/clouddriver/kubernetes/v2/controllers/ManifestController.java
+// +kubebuilder:validation:Enum=oldest;smallest;newest;largest;second_newest
+type TargetCriteria string
+
+//This value comes from: /clouddriver/clouddriver-kubernetes-v2/src/main/java/com/netflix/spinnaker/clouddriver/kubernetes/v2/security/KubernetesSelector.java
+// +kubebuilder:validation:Enum=ANY;EQUALS;NOT_EQUALS;CONTAINS;NOT_CONTAINS;EXISTS;NOT_EXISTS
+type SelectorsKind string
+
+type Selector struct {
+	Key           string `json:"key,omitempty"`
+	SelectorsKind `json:"kind,omitempty"`
+	Values        []string `json:"values,omitempty"`
+}
+
+type LabelSelector struct {
+	Selector []Selector `json:"selectors,omitempty"`
+}
+
 type DeleteManifest struct {
 	Account       string `json:"account"`
 	App           string `json:"app"`
 	CloudProvider string `json:"cloudProvider"`
 	Location      string `json:"location"`
-	ManifestName  string `json:"manifestName"`
-	Mode          string `json:"mode"`
+	//This should be fixed to use type DeleteManifestMode
+	DeleteManifestMode string `json:"mode"`
+	//This should be fixed to use type SpinnakerKind
+	// +optional
+	SpinnakerKind string `json:"kind,omitempty"`
+	// +optional
+	TargetName string `json:"targetName,omitempty"`
+	// +optional
+	LabelSelector `json:"labelSelectors,omitempty"`
 	// +optional
 	Options *Options `json:"options,omitempty"`
+	// +optional
+	Cluster string `json:"cluster,omitempty"`
+	// +optional
+	TargetCriteria `json:"criteria,omitempty"`
+
+	// +optional
+	Kinds []string `json:"kinds,omitempty"`
+	//Kinds []SpinnakerKind `json:"kinds,omitempty"`
+
+	// +optional
+	Comments string `json:"comments,omitempty"`
+
+	// +optional
+	RestrictExecutionDuringTimeWindow bool `json:"restrictExecutionDuringTimeWindow,omitempty"`
+	// +optional
+	RestrictedExecutionWindow `json:"restrictedExecutionWindow,omitempty"`
+	// +optional
+	SkipWindowText string `json:"skipWindowText,omitempty"`
 }
 
 type Options struct {
@@ -317,7 +369,6 @@ type Jitter struct {
 	SkipManual bool `json:"skipManual,omitempty"`
 }
 
-
 // StatusUrlResolution will poll a status url to determine the progress of the stage.
 // +kubebuilder:validation:Enum=locationHeader;getMethod;webhookResponse
 type StatusUrlResolution string
@@ -325,18 +376,14 @@ type StatusUrlResolution string
 // Webhook represents a webhook stage in Spinnaker.
 // NOTE: notifications currently not supported for this stage.
 type Webhook struct {
+	Url           string `json:"url,omitempty"`
+	WebhookMethod string `json:"method,omitempty"`
 	// +optional
 	Comments string `json:"comments,omitempty"`
 	// +optional
 	FailOnFailedExpressions bool `json:"failOnFailedExpressions,omitempty"`
 	// +optional
-	ExpectedArtifacts           []Artifact          `json:"expectedArtifacts,omitempty"`
-	// +optional
-	RestrictExecutionDuringTimeWindow bool `json:"restrictExecutionDuringTimeWindow,omitempty"`
-	// +optional
-	RestrictedExecutionWindow `json:"restrictedExecutionWindow,omitempty"`
-	// +optional
-	SkipWindowText string `json:"skipWindowText,omitempty"`
+	ExpectedArtifacts []Artifact `json:"expectedArtifacts,omitempty"`
 	// +optional
 	StageEnabled `json:"stageEnabled,omitempty"`
 	// +optional
@@ -349,7 +396,6 @@ type Webhook struct {
 	CanceledStatuses string `json:"canceledStatuses,omitempty"`
 	//+optional
 	CustomHeaders string `json:"customHeaders,omitempty"`
-	WebhookMethod string `json:"method,omitempty"`
 	//+optional
 	Payload string `json:"payload,omitempty"`
 	//+optional
@@ -366,15 +412,22 @@ type Webhook struct {
 	SuccessStatuses string `json:"successStatuses,omitempty"`
 	//+optional
 	TerminalStatuses string `json:"terminalStatuses,omitempty"`
-	Url string `json:"url,omitempty"`
 	//+optional
 	WaitBeforeMonitor string `json:"waitBeforeMonitor,omitempty"`
 	//+optional
 	WaitForCompletion bool `json:"waitForCompletion,omitempty"`
 	//+optional
 	StatusUrlJsonPath string `json:"statusUrlJsonPath,omitempty"`
-}
+	//+optional
+	SignalCancellation bool `json:"signalCancellation,omitempty"`
 
+	// +optional
+	RestrictExecutionDuringTimeWindow bool `json:"restrictExecutionDuringTimeWindow,omitempty"`
+	// +optional
+	RestrictedExecutionWindow `json:"restrictedExecutionWindow,omitempty"`
+	// +optional
+	SkipWindowText string `json:"skipWindowText,omitempty"`
+}
 
 // ToSpinnakerStage TODO description
 func (su StageUnion) ToSpinnakerStage() (map[string]interface{}, error) {
@@ -405,6 +458,13 @@ func (su StageUnion) ToSpinnakerStage() (map[string]interface{}, error) {
 		s := structs.New(crdStage.(DeleteManifest))
 		s.TagName = "json"
 		mapified = s.Map()
+
+		//When we have static target the manifestname is the union of kind and targetName
+		//I wanted to have this code on this way to be able to validate kind type, but for some reason
+		//Validation is not working, need to investigate more.
+		if modevalue, ok := mapified["mode"]; ok && modevalue == "static" {
+			mapified["manifestName"] = mapified["kind"].(string) + " " + mapified["targetName"].(string)
+		}
 	case "CheckPreconditions":
 		s := structs.New(crdStage.(CheckPreconditions))
 		s.TagName = "json"
@@ -433,15 +493,15 @@ func (su StageUnion) ToSpinnakerStage() (map[string]interface{}, error) {
 		s.TagName = "json"
 		mapified = s.Map()
 
-		err := rewriteStringValueFromMapToMapInterface("payload",mapified)
+		err := rewriteStringValueFromMapToMapInterface("payload", mapified)
 		if err != nil {
 			return mapified, err
 		}
-		err = rewriteStringValueFromMapToMapInterface("cancelPayload",mapified)
+		err = rewriteStringValueFromMapToMapInterface("cancelPayload", mapified)
 		if err != nil {
 			return mapified, err
 		}
-		err = rewriteStringValueFromMapToMapInterface("customHeaders",mapified)
+		err = rewriteStringValueFromMapToMapInterface("customHeaders", mapified)
 		if err != nil {
 			return mapified, err
 		}
@@ -467,9 +527,9 @@ func (su StageUnion) ToSpinnakerStage() (map[string]interface{}, error) {
 	return mapified, nil
 }
 
-func rewriteStringValueFromMapToMapInterface(field string, mapified map[string]interface{})  error {
+func rewriteStringValueFromMapToMapInterface(field string, mapified map[string]interface{}) error {
 	if fieldString, ok := mapified[field].(string); ok {
-		payloadMap,err := stringToMapInterface(fieldString)
+		payloadMap, err := stringToMapInterface(fieldString)
 		if err != nil {
 			return err
 		}

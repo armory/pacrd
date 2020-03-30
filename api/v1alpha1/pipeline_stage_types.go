@@ -110,11 +110,55 @@ type Context struct {
 //This comes from the Object spinnakerKindMap in call: http://localhost:8084/credentials?expand=true
 //Also this can be found in class  /clouddriver/clouddriver-kubernetes-v2/src/main/java/com/netflix/spinnaker/clouddriver/kubernetes/v2/description/manifest/KubernetesKind.java
 // +kubebuilder:validation:Enum=apiService;clusterRole;clusterRoleBinding;configMap;controllerRevision;cronJob;customResourceDefinition;daemonSet;deployment;event;horizontalpodautoscaler;ingress;job;limitRange;mutatingWebhookConfiguration;namespace;networkPolicy;persistentVolume;persistentVolumeClaim;pod;podDisruptionBudget;podPreset;podSecurityPolicy;replicaSet;role;roleBinding;secret;service;serviceAccount;statefulSet;storageClass;validatingWebhookConfiguration
-type SpinnakerKind string
+type KubernetesKind string
+
+const (
+	ApiService                     KubernetesKind = "apiService"
+	ClusterRole                    KubernetesKind = "clusterRole"
+	ClusterRoleBinding             KubernetesKind = "clusterRoleBinding"
+	ConfigMap                      KubernetesKind = "configMap"
+	ControllerRevision             KubernetesKind = "controllerRevision"
+	CronJob                        KubernetesKind = "cronJob"
+	CustomResourceDefinition       KubernetesKind = "customResourceDefinition"
+	DaemonSet                      KubernetesKind = "daemonSet"
+	Deployment                     KubernetesKind = "deployment"
+	Event                          KubernetesKind = "event"
+	Horizontalpodautoscaler        KubernetesKind = "horizontalpodautoscaler"
+	Ingress                        KubernetesKind = "ingress"
+	Job                            KubernetesKind = "job"
+	LimitRange                     KubernetesKind = "limitRange"
+	MutatingWebhookConfiguration   KubernetesKind = "mutatingWebhookConfiguration"
+	Namespace                      KubernetesKind = "namespace"
+	NetworkPolicy                  KubernetesKind = "networkPolicy"
+	PersistentVolume               KubernetesKind = "persistentVolume"
+	PersistentVolumeClaim          KubernetesKind = "persistentVolumeClaim"
+	Pod                            KubernetesKind = "pod"
+	PodDisruptionBudget            KubernetesKind = "podDisruptionBudget"
+	PodPreset                      KubernetesKind = "podPreset"
+	PodSecurityPolicy              KubernetesKind = "podSecurityPolicy"
+	ReplicaSet                     KubernetesKind = "replicaSet"
+	Role                           KubernetesKind = "role"
+	RoleBinding                    KubernetesKind = "roleBinding"
+	Secret                         KubernetesKind = "secret"
+	Service                        KubernetesKind = "service"
+	ServiceAccount                 KubernetesKind = "serviceAccount"
+	StatefulSet                    KubernetesKind = "statefulSet"
+	StorageClass                   KubernetesKind = "storageClass"
+	ValidatingWebhookConfiguration KubernetesKind = "validatingWebhookConfiguration"
+)
 
 //Not sure where these values are in the service, need to find more but for the moment this are all possible
-// +kubebuilder:validation:Enum=dynamic;label;static;
+// +kubebuilder:validation:Enum=static;dynamic;label
 type DeleteManifestMode string
+
+const (
+	// ChooseStaticTarget selector for delete manifest
+	ChooseStaticTarget DeleteManifestMode = "static"
+	// ChooseTargetDynamically selector for delete manifest
+	ChooseTargetDynamically DeleteManifestMode = "dynamic"
+	// MatchTargetLabel selector for delete manifest
+	MatchTargetLabel DeleteManifestMode = "label"
+)
 
 //These values can be found in: /clouddriver/clouddriver-kubernetes-v2/src/main/java/com/netflix/spinnaker/clouddriver/kubernetes/v2/controllers/ManifestController.java
 // +kubebuilder:validation:Enum=oldest;smallest;newest;largest;second_newest
@@ -140,10 +184,10 @@ type DeleteManifest struct {
 	CloudProvider string `json:"cloudProvider"`
 	Location      string `json:"location"`
 	//This should be fixed to use type DeleteManifestMode
-	DeleteManifestMode string `json:"mode"`
+	DeleteManifestMode `json:"mode"`
 	//This should be fixed to use type SpinnakerKind
 	// +optional
-	SpinnakerKind string `json:"kind,omitempty"`
+	KubernetesKind `json:"kind,omitempty"`
 	// +optional
 	TargetName string `json:"targetName,omitempty"`
 	// +optional
@@ -156,7 +200,7 @@ type DeleteManifest struct {
 	TargetCriteria `json:"criteria,omitempty"`
 
 	// +optional
-	Kinds []string `json:"kinds,omitempty"`
+	Kinds []KubernetesKind `json:"kinds,omitempty"`
 	//Kinds []SpinnakerKind `json:"kinds,omitempty"`
 
 	// +optional
@@ -460,10 +504,10 @@ func (su StageUnion) ToSpinnakerStage() (map[string]interface{}, error) {
 		mapified = s.Map()
 
 		//When we have static target the manifestname is the union of kind and targetName
-		//I wanted to have this code on this way to be able to validate kind type, but for some reason
-		//Validation is not working, need to investigate more.
-		if modevalue, ok := mapified["mode"]; ok && modevalue == "static" {
-			mapified["manifestName"] = mapified["kind"].(string) + " " + mapified["targetName"].(string)
+		if modevalue, ok := mapified["mode"]; ok && modevalue == ChooseStaticTarget {
+			if mapified["kind"] != nil && mapified["targetName"] != nil {
+				mapified["manifestName"] = fmt.Sprintf("%v %v", mapified["kind"], mapified["targetName"])
+			}
 		}
 	case "CheckPreconditions":
 		s := structs.New(crdStage.(CheckPreconditions))

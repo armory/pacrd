@@ -315,7 +315,7 @@ func (in *DeleteManifest) DeepCopyInto(out *DeleteManifest) {
 	}
 	if in.Kinds != nil {
 		in, out := &in.Kinds, &out.Kinds
-		*out = make([]string, len(*in))
+		*out = make([]KubernetesKind, len(*in))
 		copy(*out, *in)
 	}
 	in.RestrictedExecutionWindow.DeepCopyInto(&out.RestrictedExecutionWindow)

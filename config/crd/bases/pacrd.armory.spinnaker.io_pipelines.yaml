@@ -350,9 +350,78 @@ spec:
                         type: string
                       kind:
                         description: This should be fixed to use type SpinnakerKind
+                        enum:
+                        - apiService
+                        - clusterRole
+                        - clusterRoleBinding
+                        - configMap
+                        - controllerRevision
+                        - cronJob
+                        - customResourceDefinition
+                        - daemonSet
+                        - deployment
+                        - event
+                        - horizontalpodautoscaler
+                        - ingress
+                        - job
+                        - limitRange
+                        - mutatingWebhookConfiguration
+                        - namespace
+                        - networkPolicy
+                        - persistentVolume
+                        - persistentVolumeClaim
+                        - pod
+                        - podDisruptionBudget
+                        - podPreset
+                        - podSecurityPolicy
+                        - replicaSet
+                        - role
+                        - roleBinding
+                        - secret
+                        - service
+                        - serviceAccount
+                        - statefulSet
+                        - storageClass
+                        - validatingWebhookConfiguration
                         type: string
                       kinds:
                         items:
+                          description: 'This comes from the Object spinnakerKindMap
+                            in call: http://localhost:8084/credentials?expand=true
+                            Also this can be found in class  /clouddriver/clouddriver-kubernetes-v2/src/main/java/com/netflix/spinnaker/clouddriver/kubernetes/v2/description/manifest/KubernetesKind.java'
+                          enum:
+                          - apiService
+                          - clusterRole
+                          - clusterRoleBinding
+                          - configMap
+                          - controllerRevision
+                          - cronJob
+                          - customResourceDefinition
+                          - daemonSet
+                          - deployment
+                          - event
+                          - horizontalpodautoscaler
+                          - ingress
+                          - job
+                          - limitRange
+                          - mutatingWebhookConfiguration
+                          - namespace
+                          - networkPolicy
+                          - persistentVolume
+                          - persistentVolumeClaim
+                          - pod
+                          - podDisruptionBudget
+                          - podPreset
+                          - podSecurityPolicy
+                          - replicaSet
+                          - role
+                          - roleBinding
+                          - secret
+                          - service
+                          - serviceAccount
+                          - statefulSet
+                          - storageClass
+                          - validatingWebhookConfiguration
                           type: string
                         type: array
                       labelSelectors:
@@ -384,6 +453,10 @@ spec:
                         type: string
                       mode:
                         description: This should be fixed to use type DeleteManifestMode
+                        enum:
+                        - static
+                        - dynamic
+                        - label
                         type: string
                       options:
                         properties:

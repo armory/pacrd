@@ -1,7 +1,7 @@
 
 # Image URL to use all building/pushing image targets
 RELEASE ?= ""  # Must be set at runtime
-IMAGE_VERSION ?= $(shell git describe --always --dirty)
+IMAGE_VERSION ?= $(shell git describe --always)
 IMG ?= armory/pacrd:${IMAGE_VERSION}
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true"

@@ -5,4 +5,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: armory/pacrd
-  newTag: ca89564-dirty
+  newTag: ea52d3b

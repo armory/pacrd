@@ -510,7 +510,6 @@ spec:
                     - app
                     - cloudProvider
                     - location
-                    - mode
                     type: object
                   deployManifest:
                     description: DeployManifest deploys a Kubernetes manifest to a

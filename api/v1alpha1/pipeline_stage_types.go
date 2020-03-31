@@ -183,8 +183,9 @@ type DeleteManifest struct {
 	App           string `json:"app"`
 	CloudProvider string `json:"cloudProvider"`
 	Location      string `json:"location"`
+	// +optional
 	//This should be fixed to use type DeleteManifestMode
-	DeleteManifestMode `json:"mode"`
+	DeleteManifestMode `json:"mode,omitempty"`
 	//This should be fixed to use type SpinnakerKind
 	// +optional
 	KubernetesKind `json:"kind,omitempty"`

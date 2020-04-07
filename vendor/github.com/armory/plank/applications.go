@@ -16,7 +16,6 @@
 package plank
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -94,8 +93,6 @@ type createApplicationTask struct {
 // CreateApplication does what it says.
 func (c *Client) CreateApplication(a *Application) error {
 	payload := createApplicationTask{Application: *a, Type: "createApplication"}
-	v, _ := json.Marshal(payload)
-	fmt.Println(string(v))
 	ref, err := c.CreateTask(a.Name, fmt.Sprintf("Create Application: %s", a.Name), payload)
 	if err != nil {
 		return fmt.Errorf("could not create application - %v", err)

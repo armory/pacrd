@@ -387,7 +387,7 @@ spec:
                       kinds:
                         items:
                           description: 'This comes from the Object spinnakerKindMap
-                            in call: http://localhost:8084/credentials?expand=true
+                            in call: http://localhost:8084/credentials?expand=true.
                             Also this can be found in class  /clouddriver/clouddriver-kubernetes-v2/src/main/java/com/netflix/spinnaker/clouddriver/kubernetes/v2/description/manifest/KubernetesKind.java'
                           enum:
                           - apiService
@@ -722,7 +722,72 @@ spec:
                     - CheckPreconditions
                     - DeployManifest
                     - Webhook
+                    - UndoRolloutManifest
                     type: string
+                  undoRolloutManifest:
+                    description: UndoRolloutManifest rolls back a Kubernetes manifest
+                      to a previous version.
+                    properties:
+                      account:
+                        type: string
+                      cloudProvider:
+                        type: string
+                      kind:
+                        description: 'This comes from the Object spinnakerKindMap
+                          in call: http://localhost:8084/credentials?expand=true.
+                          Also this can be found in class  /clouddriver/clouddriver-kubernetes-v2/src/main/java/com/netflix/spinnaker/clouddriver/kubernetes/v2/description/manifest/KubernetesKind.java'
+                        enum:
+                        - apiService
+                        - clusterRole
+                        - clusterRoleBinding
+                        - configMap
+                        - controllerRevision
+                        - cronJob
+                        - customResourceDefinition
+                        - daemonSet
+                        - deployment
+                        - event
+                        - horizontalpodautoscaler
+                        - ingress
+                        - job
+                        - limitRange
+                        - mutatingWebhookConfiguration
+                        - namespace
+                        - networkPolicy
+                        - persistentVolume
+                        - persistentVolumeClaim
+                        - pod
+                        - podDisruptionBudget
+                        - podPreset
+                        - podSecurityPolicy
+                        - replicaSet
+                        - role
+                        - roleBinding
+                        - secret
+                        - service
+                        - serviceAccount
+                        - statefulSet
+                        - storageClass
+                        - validatingWebhookConfiguration
+                        type: string
+                      location:
+                        type: string
+                      mode:
+                        description: UndoRolloutManifestMode is the means for undoing
+                          a manifest rollout.
+                        enum:
+                        - static
+                        type: string
+                      numRevisionsBack:
+                        type: integer
+                      targetName:
+                        type: string
+                    required:
+                    - account
+                    - cloudProvider
+                    - location
+                    - numRevisionsBack
+                    type: object
                   webhook:
                     description: Webhook allows you to make quick API calls to an
                       external system as part of a pipeline

@@ -5,13 +5,14 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/armory-io/pacrd/api/v1alpha1/stage"
 	"github.com/fatih/structs"
 	"github.com/iancoleman/strcase"
 	"gopkg.in/yaml.v3"
 )
 
 // StageUnionType is an alias for the type name of the pipeline's stage.
-// +kubebuilder:validation:Enum=BakeManifest;FindArtifactsFromResource;ManualJudgment;DeleteManifest;CheckPreconditions;DeployManifest;Webhook;
+// +kubebuilder:validation:Enum=BakeManifest;FindArtifactsFromResource;ManualJudgment;DeleteManifest;CheckPreconditions;DeployManifest;Webhook;UndoRolloutManifest
 type StageUnionType string
 
 // StageUnion is a union type that encompasses strongly typed stage defnitions.
@@ -50,6 +51,9 @@ type StageUnion struct {
 	//Webhook allows you to make quick API calls to an external system as part of a pipeline
 	// +optional
 	Webhook `json:"webhook,omitempty"`
+	// UndoRolloutManifest rolls back a Kubernetes manifest to a previous version.
+	//+optional
+	stage.UndoRolloutManifest `json:"undoRolloutManifest,omitempty"`
 }
 
 // DeployManifest TODO
@@ -107,46 +111,6 @@ type Context struct {
 	FailureMessage *string `json:"failureMessage,omitempty"`
 }
 
-//This comes from the Object spinnakerKindMap in call: http://localhost:8084/credentials?expand=true
-//Also this can be found in class  /clouddriver/clouddriver-kubernetes-v2/src/main/java/com/netflix/spinnaker/clouddriver/kubernetes/v2/description/manifest/KubernetesKind.java
-// +kubebuilder:validation:Enum=apiService;clusterRole;clusterRoleBinding;configMap;controllerRevision;cronJob;customResourceDefinition;daemonSet;deployment;event;horizontalpodautoscaler;ingress;job;limitRange;mutatingWebhookConfiguration;namespace;networkPolicy;persistentVolume;persistentVolumeClaim;pod;podDisruptionBudget;podPreset;podSecurityPolicy;replicaSet;role;roleBinding;secret;service;serviceAccount;statefulSet;storageClass;validatingWebhookConfiguration
-type KubernetesKind string
-
-const (
-	ApiService                     KubernetesKind = "apiService"
-	ClusterRole                    KubernetesKind = "clusterRole"
-	ClusterRoleBinding             KubernetesKind = "clusterRoleBinding"
-	ConfigMap                      KubernetesKind = "configMap"
-	ControllerRevision             KubernetesKind = "controllerRevision"
-	CronJob                        KubernetesKind = "cronJob"
-	CustomResourceDefinition       KubernetesKind = "customResourceDefinition"
-	DaemonSet                      KubernetesKind = "daemonSet"
-	Deployment                     KubernetesKind = "deployment"
-	Event                          KubernetesKind = "event"
-	Horizontalpodautoscaler        KubernetesKind = "horizontalpodautoscaler"
-	Ingress                        KubernetesKind = "ingress"
-	Job                            KubernetesKind = "job"
-	LimitRange                     KubernetesKind = "limitRange"
-	MutatingWebhookConfiguration   KubernetesKind = "mutatingWebhookConfiguration"
-	Namespace                      KubernetesKind = "namespace"
-	NetworkPolicy                  KubernetesKind = "networkPolicy"
-	PersistentVolume               KubernetesKind = "persistentVolume"
-	PersistentVolumeClaim          KubernetesKind = "persistentVolumeClaim"
-	Pod                            KubernetesKind = "pod"
-	PodDisruptionBudget            KubernetesKind = "podDisruptionBudget"
-	PodPreset                      KubernetesKind = "podPreset"
-	PodSecurityPolicy              KubernetesKind = "podSecurityPolicy"
-	ReplicaSet                     KubernetesKind = "replicaSet"
-	Role                           KubernetesKind = "role"
-	RoleBinding                    KubernetesKind = "roleBinding"
-	Secret                         KubernetesKind = "secret"
-	Service                        KubernetesKind = "service"
-	ServiceAccount                 KubernetesKind = "serviceAccount"
-	StatefulSet                    KubernetesKind = "statefulSet"
-	StorageClass                   KubernetesKind = "storageClass"
-	ValidatingWebhookConfiguration KubernetesKind = "validatingWebhookConfiguration"
-)
-
 //Not sure where these values are in the service, need to find more but for the moment this are all possible
 // +kubebuilder:validation:Enum=static;dynamic;label
 type DeleteManifestMode string
@@ -188,7 +152,7 @@ type DeleteManifest struct {
 	DeleteManifestMode `json:"mode,omitempty"`
 	//This should be fixed to use type SpinnakerKind
 	// +optional
-	KubernetesKind `json:"kind,omitempty"`
+	stage.KubernetesKind `json:"kind,omitempty"`
 	// +optional
 	TargetName string `json:"targetName,omitempty"`
 	// +optional
@@ -201,7 +165,7 @@ type DeleteManifest struct {
 	TargetCriteria `json:"criteria,omitempty"`
 
 	// +optional
-	Kinds []KubernetesKind `json:"kinds,omitempty"`
+	Kinds []stage.KubernetesKind `json:"kinds,omitempty"`
 	//Kinds []SpinnakerKind `json:"kinds,omitempty"`
 
 	// +optional
@@ -506,9 +470,28 @@ func (su StageUnion) ToSpinnakerStage() (map[string]interface{}, error) {
 
 		//When we have static target the manifestname is the union of kind and targetName
 		if modevalue, ok := mapified["mode"]; ok && modevalue == ChooseStaticTarget {
-			if mapified["kind"] != nil && mapified["targetName"] != nil {
-				mapified["manifestName"] = fmt.Sprintf("%v %v", mapified["kind"], mapified["targetName"])
+			manifestName, err := stage.GenerateManifestName(mapified)
+
+			if err != nil {
+				return mapified, err
 			}
+
+			mapified["manifestName"] = manifestName
+		}
+	case "UndoRolloutManifest":
+		s := structs.New(crdStage.(stage.UndoRolloutManifest))
+		s.TagName = "json"
+		mapified = s.Map()
+
+		//When we have static target the manifestname is the union of kind and targetName
+		if modevalue, ok := mapified["mode"]; ok && modevalue == stage.UndoRolloutManifestStaticMode {
+			manifestName, err := stage.GenerateManifestName(mapified)
+
+			if err != nil {
+				return mapified, err
+			}
+
+			mapified["manifestName"] = manifestName
 		}
 	case "CheckPreconditions":
 		s := structs.New(crdStage.(CheckPreconditions))

@@ -58,3 +58,9 @@ pacrd.yaml
 
 # Release manifests that shouldn't be committed
 pacrd-*.yaml
+
+# Ignore Gradle project-specific cache directory
+.gradle
+
+# Ignore Gradle build output directory
+build

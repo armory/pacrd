@@ -1,0 +1,33 @@
+on: [push, pull_request]
+name: Tests
+jobs:
+  test:
+    strategy:
+      matrix:
+        go-version: ["1.14"]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install Go
+      uses: actions/setup-go@v1
+      with:
+        go-version: ${{ matrix.go-version }}
+    - name: Checkout Code
+      uses: actions/checkout@v2
+    - name: Test PaCRD
+      run: |
+        # Install `kubebuilder` into the environment.
+        os=$(go env GOOS)
+        arch=$(go env GOARCH)
+
+        curl -L https://go.kubebuilder.io/dl/2.2.0/${os}/${arch} | tar -xz -C .
+
+        mv ./kubebuilder_2.2.0_${os}_${arch} ./kubebuilder
+        export PATH=$PATH:$(pwd)/kubebuilder/bin
+        export KUBEBUILDER_ASSETS="$(pwd)/kubebuilder/bin"
+
+        ls "$KUBEBUILDER_ASSETS"
+
+        kubebuilder version
+
+        # Run our tests
+        make test

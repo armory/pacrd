@@ -5,4 +5,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: armory/pacrd
-  newTag: 3a1ba6d
+  newTag: b816c8f

@@ -32,3 +32,4 @@ spec:
         mode: static
         kind: apiService
         targetName: testingName
+        numRevisionsBack: 1

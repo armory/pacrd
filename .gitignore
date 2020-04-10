@@ -61,6 +61,11 @@ pacrd-*.yaml
 
 # Ignore Gradle project-specific cache directory
 .gradle
+.project
+.settings
 
 # Ignore Gradle build output directory
 build
+
+# Don't commit the fake doc.go file
+api/v1alpha1/doc.go

@@ -5,7 +5,6 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/armory-io/pacrd/api/v1alpha1/stage"
 	"github.com/fatih/structs"
 	"github.com/iancoleman/strcase"
 	"gopkg.in/yaml.v3"
@@ -53,7 +52,7 @@ type StageUnion struct {
 	Webhook `json:"webhook,omitempty"`
 	// UndoRolloutManifest rolls back a Kubernetes manifest to a previous version.
 	//+optional
-	stage.UndoRolloutManifest `json:"undoRolloutManifest,omitempty"`
+	UndoRolloutManifest `json:"undoRolloutManifest,omitempty"`
 }
 
 // DeployManifest TODO
@@ -152,7 +151,7 @@ type DeleteManifest struct {
 	DeleteManifestMode `json:"mode,omitempty"`
 	//This should be fixed to use type SpinnakerKind
 	// +optional
-	stage.KubernetesKind `json:"kind,omitempty"`
+	KubernetesKind `json:"kind,omitempty"`
 	// +optional
 	TargetName string `json:"targetName,omitempty"`
 	// +optional
@@ -165,7 +164,7 @@ type DeleteManifest struct {
 	TargetCriteria `json:"criteria,omitempty"`
 
 	// +optional
-	Kinds []stage.KubernetesKind `json:"kinds,omitempty"`
+	Kinds []KubernetesKind `json:"kinds,omitempty"`
 	//Kinds []SpinnakerKind `json:"kinds,omitempty"`
 
 	// +optional
@@ -470,7 +469,7 @@ func (su StageUnion) ToSpinnakerStage() (map[string]interface{}, error) {
 
 		//When we have static target the manifestname is the union of kind and targetName
 		if modevalue, ok := mapified["mode"]; ok && modevalue == ChooseStaticTarget {
-			manifestName, err := stage.GenerateManifestName(mapified)
+			manifestName, err := GenerateManifestName(mapified)
 
 			if err != nil {
 				return mapified, err
@@ -479,13 +478,13 @@ func (su StageUnion) ToSpinnakerStage() (map[string]interface{}, error) {
 			mapified["manifestName"] = manifestName
 		}
 	case "UndoRolloutManifest":
-		s := structs.New(crdStage.(stage.UndoRolloutManifest))
+		s := structs.New(crdStage.(UndoRolloutManifest))
 		s.TagName = "json"
 		mapified = s.Map()
 
 		//When we have static target the manifestname is the union of kind and targetName
-		if modevalue, ok := mapified["mode"]; ok && modevalue == stage.UndoRolloutManifestStaticMode {
-			manifestName, err := stage.GenerateManifestName(mapified)
+		if modevalue, ok := mapified["mode"]; ok && modevalue == UndoRolloutManifestStaticMode {
+			manifestName, err := GenerateManifestName(mapified)
 
 			if err != nil {
 				return mapified, err

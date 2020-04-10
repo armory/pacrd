@@ -5,6 +5,7 @@ IMAGE_VERSION ?= $(shell git describe --always --dirty)
 IMG ?= armory/pacrd:${IMAGE_VERSION}
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true"
+DOCS_PROJECT ?= ~/armory/documentation
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -74,6 +75,18 @@ vet:
 # Generate code
 generate: controller-gen
 	$(CONTROLLER_GEN) object:headerFile=./hack/boilerplate.go.txt paths="./..."
+
+generate-docs: docs/config.json docs/template/
+	cp docs/doc.go.tpl api/v1alpha1/doc.go  # The gen-crd tool expects this file; temporarily create it and delete when done.
+	gen-crd-api-reference-docs \
+		-template-dir docs/template/ \
+		-config docs/config.json \
+		-api-dir github.com/armory-io/pacrd/api/v1alpha1/ \
+		-out-file $(DOCS_PROJECT)/_spinnaker/pacrd-crd-docs.md
+	rm api/v1alpha1/doc.go
+
+install-doc-generator:
+	go get github.com/ahmetb/gen-crd-api-reference-docs
 
 # Build the docker image
 docker-build: test

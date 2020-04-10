@@ -1,4 +1,4 @@
-package stage
+package v1alpha1
 
 // UndoRolloutManifestMode is the means for undoing a manifest rollout.
 // +kubebuilder:validation:Enum=static

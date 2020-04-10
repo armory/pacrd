@@ -3,6 +3,7 @@ module github.com/armory-io/pacrd
 go 1.13
 
 require (
+	github.com/ahmetb/gen-crd-api-reference-docs v0.2.0 // indirect
 	github.com/armory/plank v1.3.1-0.20200320030005-945d760f2b32
 	github.com/fatih/structs v1.1.0
 	github.com/go-logr/logr v0.1.0

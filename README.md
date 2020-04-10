@@ -154,3 +154,24 @@ kustomize build config/default > pacrd-0.2.0.yaml
 aws --region=us-east-1 --profile=prod s3 cp pacrd-0.2.0.yaml s3://engineering.armory.io/manifests/pacrd-0.2.0.yaml
 upload: ./pacrd-0.2.0.yaml to s3://engineering.armory.io/manifests/pacrd-0.2.0.yaml
 ```
+
+### Generating API Documentation
+
+This project has the ability to generate human-readable documentation for
+inclusion in Armory's doc site.
+
+We make the following assumptions:
+
+- You have the `gen-crd-api-reference-docs` tool installed
+  - If you don't, run `make install-doc-generator`
+- `$GOBIN` is defined and in your `$PATH`
+- Your checkout of the Armory docs project is at `~/armory/documentation`
+  - If it is not, you can set the `DOCS_PROJECT` variable when running the generation command
+
+To generate documentation, run the following `make` target:
+
+```
+make generate-docs  # optionally supply DOCS_PROJECT=your/docs/checkout/path
+```
+
+Then create a pull-request to the docs project with your updates!

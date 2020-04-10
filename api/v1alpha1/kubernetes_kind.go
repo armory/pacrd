@@ -1,4 +1,4 @@
-package stage
+package v1alpha1
 
 //This comes from the Object spinnakerKindMap in call: http://localhost:8084/credentials?expand=true.
 //Also this can be found in class  /clouddriver/clouddriver-kubernetes-v2/src/main/java/com/netflix/spinnaker/clouddriver/kubernetes/v2/description/manifest/KubernetesKind.java

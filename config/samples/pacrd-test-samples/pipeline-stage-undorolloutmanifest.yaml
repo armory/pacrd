@@ -28,6 +28,7 @@ spec:
         app: *app-name
         cloudProvider: kubernetes
         location: &location ffreire
+        numRevisionsBack: 1
         mode: static
         kind: apiService
         targetName: testingName

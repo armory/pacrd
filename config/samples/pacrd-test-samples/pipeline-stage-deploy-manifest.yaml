@@ -1,0 +1,48 @@
+apiVersion: pacrd.armory.spinnaker.io/v1alpha1
+kind: Application
+metadata:
+  name: pacrd-deploy-inline-manifest
+spec:
+  email: sam.tribal@armory.io
+  description: Sample deploy inline manifest stage.
+---
+#DeployManifest
+apiVersion: pacrd.armory.spinnaker.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: pacrd-deploy-inline-manifest
+spec:
+  description: Samples for DeleteManifest
+  application: &app-name pacrd-deploy-inline-manifest
+  stages:
+    - type: ManualJudgment
+      name: Should we start?
+      refId: "1"
+      manualJudgment: {}
+    - type: DeployManifest
+      name: Deploy Canary
+      refId: '2'
+      requisiteStageRefIds:
+      - '1'
+      account: kubernetes
+      cloudProvider: kubernetes
+      completeOtherBranchesThenFail: false
+      continuePipeline: true
+      failPipeline: false
+      manifestArtifactAccount: embedded-artifact
+      manifestArtifactId: "some-uuid"
+      moniker:
+        app: *app-name
+      relationships:
+        loadBalancers: []
+        securityGroups: []
+      skipExpressionEvaluation: true
+      source: artifact
+      stageEnabled:
+        expression: "${parameters.canary_deploy} == true"
+        type: expression
+      stageTimeoutMs: 600000
+      trafficManagement:
+        enabled: false
+        options:
+          enableTraffic: false

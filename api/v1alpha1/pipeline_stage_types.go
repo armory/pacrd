@@ -501,19 +501,21 @@ func (su StageUnion) ToSpinnakerStage() (map[string]interface{}, error) {
 		s.TagName = "json"
 		mapified = s.Map()
 
-		manifests := mapified["manifests"].([]string)
-		if len(manifests) > 0 {
-			var finalManifests []map[string]interface{}
+		if mapified["manifests"] != nil {
+			manifests := mapified["manifests"].([]string)
+			if len(manifests) > 0 {
+				var finalManifests []map[string]interface{}
 
-			for _, stringManifest := range manifests {
-				manifest := make(map[string]interface{})
-				err := yaml.Unmarshal([]byte(stringManifest), manifest)
-				if err != nil {
-					return mapified, err
+				for _, stringManifest := range manifests {
+					manifest := make(map[string]interface{})
+					err := yaml.Unmarshal([]byte(stringManifest), manifest)
+					if err != nil {
+						return mapified, err
+					}
+					finalManifests = append(finalManifests, manifest)
 				}
-				finalManifests = append(finalManifests, manifest)
+				mapified["manifests"] = finalManifests
 			}
-			mapified["manifests"] = finalManifests
 		}
 	case "Webhook":
 		s := structs.New(crdStage.(Webhook))

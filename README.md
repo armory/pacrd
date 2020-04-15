@@ -99,27 +99,14 @@ go run ./main.go ./configfile.go
 2020-03-20T08:20:14.221-0700    INFO    controllers.Application reconciling application {"application": "my-user/api-server"}
 ```
 
-### Cutting a Manual Release
+### Cutting a Release
 
-At this time releases for PaCRD are done manually, though the desired
-end-state is to have automated builds/releases. The overall processes looks
-like this:
+At this time releases for PaCRD are done somewhat manually. The overall
+processes looks like:
 
-1. Build and publish a PaCRD container from your local machine
+1. Make and merge a  pull request to a `release-*` branch (e.g. `release-0.4.x`)
 1. Build and publish the PaCRD manifest from your local machine
 1. Update documentation if needed
-
-#### Publish PaCRD Container
-
-You can build and publish the PaCRD container assuming you've logged into
-DockerHub and your user has access to the `armory` account. You can build
-and publish the container like so:
-
-```sh
-make docker-build docker-publish
-```
-
-This will publish a PaCRD container with the current git commit sha as the label.
 
 #### Publish PaCRD Manifest
 
@@ -175,3 +162,17 @@ make generate-docs  # optionally supply DOCS_PROJECT=your/docs/checkout/path
 ```
 
 Then create a pull-request to the docs project with your updates!
+
+### Publishing a Container Manually
+
+#### Publish PaCRD Container
+
+You can build and publish the PaCRD container assuming you've logged into
+DockerHub and your user has access to the `armory` account. You can build
+and publish the container like so:
+
+```sh
+make docker-build docker-publish
+```
+
+This will publish a PaCRD container with the current git commit sha as the label.

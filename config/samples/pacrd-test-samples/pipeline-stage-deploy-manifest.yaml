@@ -12,7 +12,7 @@ kind: Pipeline
 metadata:
   name: pacrd-deploy-inline-manifest
 spec:
-  description: Samples for DeleteManifest
+  description: Samples for DeployManifest
   application: &app-name pacrd-deploy-inline-manifest
   stages:
     - type: ManualJudgment

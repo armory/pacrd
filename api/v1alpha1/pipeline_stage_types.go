@@ -15,21 +15,31 @@ import (
 type StageUnionType string
 
 // StageUnion is a union type that encompasses strongly typed stage defnitions.
-// FIXME: in general: notifications, execution options, produces artifacts, and comments should be lifted to this type
-// FIXME: if requisiteStageRefIds is not validated, pipeline will no longer render correctly in UI
 type StageUnion struct {
+	// Type represents the type of stage that is described.
 	Type StageUnionType `json:"type"`
-
 	// Name is the name given to this stage.
 	Name string `json:"name"`
 	// RefID is the position in the pipeline graph that this stage should live. Usually monotonically increasing for a pipeline.
 	RefID string `json:"refId"`
-	// RequisiteStageRefIds A list of RefIDs that are required before this stage can run.
+	// RequisiteStageRefIds is a list of RefIDs that are required before this stage can run.
 	// +optional
 	RequisiteStageRefIds []string `json:"requisiteStageRefIds,omitempty"`
-
+	// StageEnabled represents whether this stage is active in a pipeline graph.
 	// +optional
 	StageEnabled *StageEnabled `json:"stageEnabled,omitempty"`
+	// Comments provide additional context for this stage in the Spinnaker UI.
+	// +optional
+	Comments string `json:"comments,omitempty"`
+	// RestrictExecutionDuringTimeWindow provides the ability to restrict the hours during which this stage can run.
+	// +optional
+	RestrictExecutionDuringTimeWindow bool `json:"restrictExecutionDuringTimeWindow,omitempty"`
+	// RestrictedExecutionWindow provides the ability to restrict the hours during which this stage can run.
+	// +optional
+	RestrictedExecutionWindow `json:"restrictedExecutionWindow,omitempty"`
+	// SkipWindowText is the text to display when this stage is skipped.
+	// +optional
+	SkipWindowText string `json:"skipWindowText,omitempty"`
 	//BakeManifest renders a Kubernetes manifest to be applied to a target cluster at a later stage. The manifests can be rendered using HELM2 or Kustomize.
 	// +optional
 	BakeManifest `json:"bakeManifest,omitempty"`
@@ -55,10 +65,12 @@ type StageUnion struct {
 	UndoRolloutManifest `json:"undoRolloutManifest,omitempty"`
 }
 
-// DeployManifest TODO
+// DeployManifest deploys a Kubernetes manifest to a target Kubernetes cluster. Spinnaker will periodically check the status of the manifest to make sure the manifest converges on the target cluster until it reaches a timeout
 // FIXME: trafficManagement, relationships
 type DeployManifest struct {
-	Account                       string `json:"account"`
+	// Account is the configured account to deploy to.
+	Account string `json:"account"`
+	// CloudProvider is the type of cloud provider used by the selected account.
 	CloudProvider                 string `json:"cloudProvider"`
 	CompleteOtherBranchesThenFail bool   `json:"completeOtherBranchesThenFail"`
 	ContinuePipeline              bool   `json:"continuePipeline"`
@@ -167,15 +179,6 @@ type DeleteManifest struct {
 	Kinds []KubernetesKind `json:"kinds,omitempty"`
 	//Kinds []SpinnakerKind `json:"kinds,omitempty"`
 
-	// +optional
-	Comments string `json:"comments,omitempty"`
-
-	// +optional
-	RestrictExecutionDuringTimeWindow bool `json:"restrictExecutionDuringTimeWindow,omitempty"`
-	// +optional
-	RestrictedExecutionWindow `json:"restrictedExecutionWindow,omitempty"`
-	// +optional
-	SkipWindowText string `json:"skipWindowText,omitempty"`
 }
 
 type Options struct {
@@ -189,8 +192,6 @@ type Options struct {
 // NOTE: I suspect this only supports `helm2` style deployments right now.
 // NOTE: notifications currently not supported for this stage.
 type BakeManifest struct {
-	// +optional
-	Comments string `json:"comments,omitempty"`
 	// +optional
 	FailOnFailedExpressions bool `json:"failOnFailedExpressions,omitempty"`
 	// +optional
@@ -211,14 +212,6 @@ type BakeManifest struct {
 	// +optional
 	RawOverrides     bool   `json:"rawOverrides,omitempty"`
 	TemplateRenderer string `json:"templateRenderer,omitempty"`
-	// +optional
-	RestrictExecutionDuringTimeWindow bool `json:"restrictExecutionDuringTimeWindow,omitempty"`
-	// +optional
-	RestrictedExecutionWindow `json:"restrictedExecutionWindow,omitempty"`
-	// +optional
-	SkipWindowText string `json:"skipWindowText,omitempty"`
-	// +optional
-	StageEnabled `json:"stageEnabled,omitempty"`
 }
 
 // Artifact TODO
@@ -293,7 +286,7 @@ type FindArtifactsFromResource struct {
 	Mode          string `json:"mode,omitempty"` // FIXME enum static/dynamic
 }
 
-// StageEnabled TODO this will need to change
+// StageEnabled represents whether this stage is active in a pipeline graph.
 type StageEnabled struct {
 	Type       string `json:"type"`
 	Expression string `json:"expression"`
@@ -301,15 +294,11 @@ type StageEnabled struct {
 
 // ManualJudgment TODO description
 type ManualJudgment struct {
-	Name                              string           `json:"name,omitempty"`
-	Comments                          string           `json:"comments,omitempty"`
-	FailPipeline                      bool             `json:"failPipeline,omitempty"`
-	Instructions                      string           `json:"instructions,omitempty"`
-	JudgmentInputs                    *[]JudgmentInput `json:"judgmentInputs,omitempty"` // No, the json annotation is not spelled incorrectly.
-	RestrictExecutionDuringTimeWindow bool             `json:"restrictExecutionDuringTimeWindow,omitempty"`
-	RestrictedExecutionWindow         `json:"restrictedExecutionWindow,omitempty"`
-	SkipWindowText                    string `json:"skipWindowText,omitempty"`
-	StageTimeoutMs                    int    `json:"stageTimeoutMs,omitempty"`
+	Name           string           `json:"name,omitempty"`
+	FailPipeline   bool             `json:"failPipeline,omitempty"`
+	Instructions   string           `json:"instructions,omitempty"`
+	JudgmentInputs *[]JudgmentInput `json:"judgmentInputs,omitempty"` // No, the json annotation is not spelled incorrectly.
+	StageTimeoutMs int              `json:"stageTimeoutMs,omitempty"`
 	// +optional
 	SendNotifications bool `json:"sendNotifications,omitempty"`
 	// +optional
@@ -387,8 +376,6 @@ type Webhook struct {
 	Url           string `json:"url,omitempty"`
 	WebhookMethod string `json:"method,omitempty"`
 	// +optional
-	Comments string `json:"comments,omitempty"`
-	// +optional
 	FailOnFailedExpressions bool `json:"failOnFailedExpressions,omitempty"`
 	// +optional
 	ExpectedArtifacts []Artifact `json:"expectedArtifacts,omitempty"`
@@ -428,13 +415,6 @@ type Webhook struct {
 	StatusUrlJsonPath string `json:"statusUrlJsonPath,omitempty"`
 	//+optional
 	SignalCancellation bool `json:"signalCancellation,omitempty"`
-
-	// +optional
-	RestrictExecutionDuringTimeWindow bool `json:"restrictExecutionDuringTimeWindow,omitempty"`
-	// +optional
-	RestrictedExecutionWindow `json:"restrictedExecutionWindow,omitempty"`
-	// +optional
-	SkipWindowText string `json:"skipWindowText,omitempty"`
 }
 
 // ToSpinnakerStage TODO description
@@ -547,6 +527,10 @@ func (su StageUnion) ToSpinnakerStage() (map[string]interface{}, error) {
 	mapified["name"] = su.Name
 	mapified["refId"] = su.RefID
 	mapified["requisiteStageRefIds"] = su.RequisiteStageRefIds
+	mapified["comments"] = su.Comments
+	mapified["restrictExecutionDuringTimeWindow"] = su.RestrictExecutionDuringTimeWindow
+	mapified["restrictedExecutionWindow"] = su.RestrictedExecutionWindow
+	mapified["skipWindowText"] = su.SkipWindowText
 	if su.StageEnabled != nil {
 		s := structs.New(su.StageEnabled)
 		s.TagName = "json"

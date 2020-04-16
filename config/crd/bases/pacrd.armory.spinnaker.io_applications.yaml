@@ -51,14 +51,31 @@ spec:
           description: ApplicationSpec defines the desired state of Application
           properties:
             dataSources:
-              description: DataSources TODO
+              description: DataSources optionally enable and disable elements of the
+                Spinnaker Application UI.
               properties:
                 disabled:
+                  description: Disabled is the list of explicitly disabled UI elements.
                   items:
+                    description: 'DataSource is a tab in the Spinnaker UI representing
+                      a kind of managed resource. Allowed values include: serverGroups,executions,loadBalancers,securityGroups.'
+                    enum:
+                    - serverGroups
+                    - executions
+                    - loadBalancers
+                    - securityGroups
                     type: string
                   type: array
                 enabled:
+                  description: Enabled is the list of explicitly enabled UI elements.
                   items:
+                    description: 'DataSource is a tab in the Spinnaker UI representing
+                      a kind of managed resource. Allowed values include: serverGroups,executions,loadBalancers,securityGroups.'
+                    enum:
+                    - serverGroups
+                    - executions
+                    - loadBalancers
+                    - securityGroups
                     type: string
                   type: array
               type: object
@@ -70,27 +87,28 @@ spec:
                 application.
               type: string
             permissions:
-              description: DataSources TODO
+              description: Permissions maps actions inside Spinnaker to authenticated
+                roles that can take them.
               properties:
                 EXECUTE:
-                  description: Execute TODO
+                  description: Execute grants the defined roles the ability to execute
+                    an application's pipelines.
                   items:
                     type: string
                   type: array
                 READ:
-                  description: Read TODO
+                  description: Read grants the defined roles the ability to read an
+                    application and its pipelines.
                   items:
                     type: string
                   type: array
                 WRITE:
-                  description: Write TODO
+                  description: Write grants the defined roles the ability to modify
+                    an application and its pipelines.
                   items:
                     type: string
                   type: array
               type: object
-            user:
-              description: User is...? TODO
-              type: string
           type: object
         status:
           description: ApplicationStatus defines the observed state of Application

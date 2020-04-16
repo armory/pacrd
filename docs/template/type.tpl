@@ -1,6 +1,6 @@
 {{ define "type" }}
 
-### {{ .Name.Name }} {{ if eq .Kind "Alias" }}(<code>{{.Underlying}}</code> alias)</p>{{ end -}}
+### {{ .Name.Name }} {{ if eq .Kind "Alias" }}(<code>{{.Underlying}}</code> alias){{ end -}}
 
 {{ with (typeReferences .) }}
 (__Appears on:__

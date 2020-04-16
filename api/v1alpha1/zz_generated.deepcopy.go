@@ -261,19 +261,19 @@ func (in *DataSources) DeepCopyInto(out *DataSources) {
 	*out = *in
 	if in.Enabled != nil {
 		in, out := &in.Enabled, &out.Enabled
-		*out = new([]string)
+		*out = new([]DataSource)
 		if **in != nil {
 			in, out := *in, *out
-			*out = make([]string, len(*in))
+			*out = make([]DataSource, len(*in))
 			copy(*out, *in)
 		}
 	}
 	if in.Disabled != nil {
 		in, out := &in.Disabled, &out.Disabled
-		*out = new([]string)
+		*out = new([]DataSource)
 		if **in != nil {
 			in, out := *in, *out
-			*out = make([]string, len(*in))
+			*out = make([]DataSource, len(*in))
 			copy(*out, *in)
 		}
 	}

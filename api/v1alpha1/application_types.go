@@ -20,45 +20,56 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// Permissions TODO
+// Permissions maps actions inside Spinnaker to authenticated roles that can take them.
 type Permissions struct {
 	// +optional
-	// Read TODO
+	// Read grants the defined roles the ability to read an application and its pipelines.
 	Read *[]string `json:"READ,omitempty"`
 	// +optional
-	// Write TODO
+	// Write grants the defined roles the ability to modify an application and its pipelines.
 	Write *[]string `json:"WRITE,omitempty"`
 	// +optional
-	// Execute TODO
+	// Execute grants the defined roles the ability to execute an application's pipelines.
 	Execute *[]string `json:"EXECUTE,omitempty"`
 }
 
-// DataSources TODO
+// DataSource is a tab in the Spinnaker UI representing a kind of managed resource.
+// Allowed values include: serverGroups,executions,loadBalancers,securityGroups.
+// +kubebuilder:validation:Enum=serverGroups;executions;loadBalancers;securityGroups
+type DataSource string
+
+const (
+	// ServerGroup shows instances of an Application.
+	ServerGroup DataSource = "serverGroups"
+	// Execution shows pipeline status for an Application.
+	Execution DataSource = "executions"
+	// LoadBalancer shows configured load balancers for an Application.
+	LoadBalancer DataSource = "loadBalancers"
+	// SecurityGroup shows configured network policies for an Application.
+	SecurityGroup DataSource = "securityGroups"
+)
+
+// DataSources optionally enable and disable elements of the Spinnaker Application UI.
 type DataSources struct {
+	// Enabled is the list of explicitly enabled UI elements.
 	// +optional
-	Enabled *[]string `json:"enabled,omitempty"`
+	Enabled *[]DataSource `json:"enabled,omitempty"`
+	// Disabled is the list of explicitly disabled UI elements.
 	// +optional
-	Disabled *[]string `json:"disabled,omitempty"`
+	Disabled *[]DataSource `json:"disabled,omitempty"`
 }
 
 // ApplicationSpec defines the desired state of Application
 type ApplicationSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
 	// Email points to the e-mail user or list that owns this application.
 	Email string `json:"email,omitempty"`
 	// Description explains the purpose of this application.
 	Description string `json:"description,omitempty"`
-	// User is...? TODO
-	User string `json:"user,omitempty"`
-
+	// DataSources optionally enable and disable elements of the Spinnaker Application UI.
 	// +optional
-	// DataSources TODO
 	*DataSources `json:"dataSources,omitempty"`
-
+	// Permissions maps actions inside Spinnaker to authenticated roles that can take them.
 	// +optional
-	// DataSources TODO
 	*Permissions `json:"permissions,omitempty"`
 }
 
@@ -72,12 +83,12 @@ type ApplicationStatus struct {
 	URL string `json:"url,omitempty"`
 }
 
-// ApplicationPhase represents the various stages a application could be in with Spinnaker.
+// ApplicationPhase represents the various stages an application could be in with Spinnaker.
 //+kubebuilder:validation:Enum=ErrorNotFound;Creating;ErrorFailedToCreate;Created;Deleting;ErrorDeletingApplication;Updated;ErrorUpdatingApplication
 type ApplicationPhase string
 
 const (
-	// ApplicationOrApplicationNotFound means a application couldn't be attached to an application.
+	// ApplicationOrPipelineNotFound means an application couldn't be attached to an application.
 	ApplicationOrPipelineNotFound ApplicationPhase = "ErrorNotFound"
 	// ApplicationCreating means the application is being created in Spinnaker
 	ApplicationCreating ApplicationPhase = "Creating"
@@ -130,7 +141,6 @@ func (a Application) ToSpinApplication() plank.Application {
 		Name:        a.Name,
 		Email:       a.Spec.Email,
 		Description: a.Spec.Description,
-		User:        a.Spec.User,
 	}
 
 	if a.Spec.DataSources != nil {
@@ -138,10 +148,18 @@ func (a Application) ToSpinApplication() plank.Application {
 		spinApp.DataSources = &plank.DataSourcesType{}
 
 		if a.Spec.DataSources.Disabled != nil {
-			spinApp.DataSources.Disabled = *a.Spec.DataSources.Disabled
+			var disabledSources []string
+			for _, s := range *a.Spec.DataSources.Disabled {
+				disabledSources = append(disabledSources, string(s))
+			}
+			spinApp.DataSources.Disabled = disabledSources
 		}
 		if a.Spec.DataSources.Enabled != nil {
-			spinApp.DataSources.Enabled = *a.Spec.DataSources.Enabled
+			var enabledSources []string
+			for _, s := range *a.Spec.DataSources.Enabled {
+				enabledSources = append(enabledSources, string(s))
+			}
+			spinApp.DataSources.Enabled = enabledSources
 		}
 	}
 

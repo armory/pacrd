@@ -1,10 +1,15 @@
 {
     "hideMemberFields": [
-        "TypeMeta"
+        "TypeMeta",
+        "Status",
+        "ObjectMeta"
     ],
     "hideTypePatterns": [
         "ParseError$",
-        "List$"
+        "List$",
+        "Phase$",
+        "Spec$",
+        "ApplicationStatus"
     ],
     "externalPackages": [
         {

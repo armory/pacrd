@@ -214,35 +214,40 @@ type BakeManifest struct {
 	TemplateRenderer string `json:"templateRenderer,omitempty"`
 }
 
-// Artifact TODO
+// Artifact is an object that references an external resource. It could be a
+// Docker container, file in source control, AMI, or binary blob in S3, etc.
 type Artifact struct {
-	ID          string `json:"id"`
+	// ID is a unique identifier for this artifact. IDs must only be unique for
+	// the pipeline they are declared in.
+	ID string `json:"id"`
+	// DisplayName tells Spinnaker how to render this artifact in the UI.
 	DisplayName string `json:"displayName"`
+	// Attempt to match against an artifact in the prior pipeline execution's context.
+	//
+	// See the [reference](https://www.spinnaker.io/reference/artifacts/in-pipelines)
+	// for more information.
 	// +optional
 	UsePriorArtifact bool `json:"usePriorArtifact,omitempty"`
+	// If true, requires DefaultArtifact to be defined with a fallback artifact to use.
 	// +optional
 	UseDefaultArtifact bool `json:"useDefaultArtifact,omitempty"`
+	// If your artifact either wasn't supplied from a trigger, or it wasn't found
+	// in a prior execution, the artifact specified here will end up in your
+	// pipeline's execution context.
 	// +optional
-	DefaultArtifact *DefaultArtifact `json:"defaultArtifact,omitempty"`
+	DefaultArtifact *MatchArtifact `json:"defaultArtifact,omitempty"`
+	// This specifies which fields in your incoming artifact to match against.
+	// Every field that you supply will be used to match against all incoming
+	// artifacts. If all specified fields match, the incoming artifact is bound
+	// to your pipeline context.
+	//
+	// See the [reference](https://www.spinnaker.io/reference/artifacts/in-pipelines/#expected-artifacts)
+	// for more information.
 	// +optional
 	MatchArtifact `json:"matchArtifact,omitempty"`
 }
 
-type DefaultArtifact struct {
-	// +optional
-	ID string `json:"id,omitempty"`
-	// +optional
-	ArtifactAccount string `json:"artifactAccount,omitempty"`
-	// +optional
-	Name string `json:"name,omitempty"`
-	// +optional
-	Reference string `json:"reference,omitempty"`
-	// +optional
-	Type string `json:"type,omitempty"`
-	// +optional
-	Version string `json:"version,omitempty"`
-}
-
+// MatchArtifact TODO
 type MatchArtifact struct {
 	// +optional
 	ID string `json:"id,omitempty"`
@@ -256,18 +261,6 @@ type MatchArtifact struct {
 	Type string `json:"type,omitempty"`
 	// +optional
 	Version string `json:"version,omitempty"`
-}
-
-// TodoArtifact represents an artifact in Spinnaker. TODO also a candidate for union type
-type TodoArtifact struct {
-	ArtifactAccount string `json:"artifactAccount"` // TODO should be enum eventually
-	// +optional
-	CustomKind bool   `json:"customKind,omitempty"`
-	Location   string `json:"location,omitempty"`
-	Name       string `json:"name,omitempty"`
-	Reference  string `json:"reference,omitempty"`
-	Type       string `json:"type"`
-	Version    string `json:"version,omitempty"`
 }
 
 // ArtifactReference TODO doesn't seem to be working...?

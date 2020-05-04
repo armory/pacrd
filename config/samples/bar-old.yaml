@@ -1,0 +1,32 @@
+apiVersion: pacrd.armory.spinnaker.io/v1alpha1
+kind: Application
+metadata:
+  name: woohoo
+spec:
+  email: fernando.freire@armory.io
+  description: because pointers!
+---
+apiVersion: pacrd.armory.spinnaker.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: woohoo
+spec:
+  description: testing json
+  application: woohoo
+  expectedArtifacts:
+    - id: &id pacrd-image
+      displayName: *id
+      matchArtifact:
+        type: docker/image
+        properties:
+          name: armory/pacrd
+          artifactAccount: docker-registry
+  stages:
+    - type: BakeManifest
+      name: lol
+      refId: "1"
+    - type: ManualJudgment
+      name: oh-wow
+      refId: "2"
+      requisiteStageRefIds: ["1"]
+      manualJudgment: {}

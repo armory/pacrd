@@ -14,7 +14,7 @@ import (
 // +kubebuilder:validation:Enum=BakeManifest;FindArtifactsFromResource;ManualJudgment;DeleteManifest;CheckPreconditions;DeployManifest;Webhook;UndoRolloutManifest
 type StageUnionType string
 
-// StageUnion is a union type that encompasses strongly typed stage defnitions.
+// Stage is a union type that encompasses strongly typed stage defnitions.
 type StageUnion struct {
 	// Type represents the type of stage that is described.
 	Type StageUnionType `json:"type"`
@@ -201,10 +201,10 @@ type BakeManifest struct {
 	// +optional
 	CompleteOtherBranchesThenFail *bool `json:"completeOtherBranchesThenFail,omitempty"`
 	// +optional
-	Namespace                   string              `json:"namespace,omitempty"`
-	EvaluateOverrideExpressions bool                `json:"evaluateOverrideExpressions,omitempty"`
-	ExpectedArtifacts           []Artifact          `json:"expectedArtifacts,omitempty"`
-	InputArtifacts              []ArtifactReference `json:"inputArtifacts,omitempty"`
+	Namespace                   string               `json:"namespace,omitempty"`
+	EvaluateOverrideExpressions bool                 `json:"evaluateOverrideExpressions,omitempty"`
+	ExpectedArtifacts           []Artifact           `json:"expectedArtifacts,omitempty"`
+	InputArtifacts              []*ArtifactReference `json:"inputArtifacts,omitempty"`
 	// +optional
 	OutputName string `json:"outputName,omitempty"`
 	// +optional
@@ -212,61 +212,6 @@ type BakeManifest struct {
 	// +optional
 	RawOverrides     bool   `json:"rawOverrides,omitempty"`
 	TemplateRenderer string `json:"templateRenderer,omitempty"`
-}
-
-// Artifact is an object that references an external resource. It could be a
-// Docker container, file in source control, AMI, or binary blob in S3, etc.
-type Artifact struct {
-	// ID is a unique identifier for this artifact. IDs must only be unique for
-	// the pipeline they are declared in.
-	ID string `json:"id"`
-	// DisplayName tells Spinnaker how to render this artifact in the UI.
-	DisplayName string `json:"displayName"`
-	// Attempt to match against an artifact in the prior pipeline execution's context.
-	//
-	// See the [reference](https://www.spinnaker.io/reference/artifacts/in-pipelines)
-	// for more information.
-	// +optional
-	UsePriorArtifact bool `json:"usePriorArtifact,omitempty"`
-	// If true, requires DefaultArtifact to be defined with a fallback artifact to use.
-	// +optional
-	UseDefaultArtifact bool `json:"useDefaultArtifact,omitempty"`
-	// If your artifact either wasn't supplied from a trigger, or it wasn't found
-	// in a prior execution, the artifact specified here will end up in your
-	// pipeline's execution context.
-	// +optional
-	DefaultArtifact *MatchArtifact `json:"defaultArtifact,omitempty"`
-	// This specifies which fields in your incoming artifact to match against.
-	// Every field that you supply will be used to match against all incoming
-	// artifacts. If all specified fields match, the incoming artifact is bound
-	// to your pipeline context.
-	//
-	// See the [reference](https://www.spinnaker.io/reference/artifacts/in-pipelines/#expected-artifacts)
-	// for more information.
-	// +optional
-	MatchArtifact `json:"matchArtifact,omitempty"`
-}
-
-// MatchArtifact TODO
-type MatchArtifact struct {
-	// +optional
-	ID string `json:"id,omitempty"`
-	// +optional
-	ArtifactAccount string `json:"artifactAccount,omitempty"`
-	// +optional
-	Reference string `json:"string,omitempty"`
-	// +optional
-	Name string `json:"name,omitempty"`
-	// +optional
-	Type string `json:"type,omitempty"`
-	// +optional
-	Version string `json:"version,omitempty"`
-}
-
-// ArtifactReference TODO doesn't seem to be working...?
-type ArtifactReference struct {
-	Account string `json:"account"`
-	ID      string `json:"id"`
 }
 
 // FindArtifactsFromResource represents the stage of the same name in Spinnaker.
@@ -427,6 +372,18 @@ func (su StageUnion) ToSpinnakerStage() (map[string]interface{}, error) {
 		s := structs.New(crd)
 		s.TagName = "json"
 		mapified = s.Map()
+
+		var mapifiedArtifacts []map[string]interface{}
+		for _, a := range crd.ExpectedArtifacts {
+			artifact, err := a.MarshallToMap()
+
+			if err != nil {
+				return map[string]interface{}{}, err // TODO wrap error
+			}
+
+			mapifiedArtifacts = append(mapifiedArtifacts, artifact)
+		}
+		mapified["expectedArtifacts"] = mapifiedArtifacts
 	case "FindArtifactsFromResource":
 		s := structs.New(crdStage.(FindArtifactsFromResource))
 		s.TagName = "json"

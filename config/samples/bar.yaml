@@ -1,7 +1,48 @@
 apiVersion: pacrd.armory.spinnaker.io/v1alpha1
 kind: Application
 metadata:
-  name: woohoo
+  name: my-app
 spec:
   email: fernando.freire@armory.io
-  description: because pointers!
+  description: because reasons
+  permissions:
+    READ:
+      - my-okta-group
+---
+apiVersion: pacrd.armory.spinnaker.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: woohoo
+spec:
+  description: testing json
+  application: woohoo
+  expectedArtifacts:
+    - id: &pacrd-image pacrd-image
+      displayName: &pacrd-display-name Public PaCRD Image
+      matchArtifact:
+        type: docker/image
+        properties:
+          name: armory/pacrd
+          artifactAccount: docker-registry
+    - id: &custom-id My Custom Artifact
+      displayName: *custom-id
+      matchArtifact:
+        type: embedded/base64
+        properties:
+          name: foobar
+  stages:
+    - type: ManualJudgment
+      name: Should We Start this Deployment?
+      refId: "1"
+      manualJudgment: {}
+    - type: BakeManifest
+      name: Let's Bake Some Manifests
+      refId: "2"
+      requisiteStageRefIds: [ "1" ]
+      bakeManifest:
+        templateRenderer: helm2
+        outputName: myManifest
+        inputArtifacts:
+          - displayName: *pacrd-display-name
+          - id: *custom-id
+          - id: a-nonsense-value

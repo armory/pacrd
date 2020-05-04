@@ -84,6 +84,31 @@ func (r *PipelineReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, err
 	}
 
+	// At this point we can start validating pipelines. Let's start by making
+	// sure for any artifact reference, we can assert that there is an equivalent
+	// artifact somewhere else in the pipeline.
+
+	for _, s := range pipeline.Spec.Stages {
+		if s.Type == "BakeManifest" {
+			for _, ia := range s.BakeManifest.InputArtifacts {
+				id, err := pacrdv1alpha1.GetArtifactID(*pipeline.Spec.ExpectedArtifacts, *ia)
+				if err != nil {
+
+					// Let the user know via describe calls that something went wrong.
+					r.Recorder.Eventf(
+						&pipeline,
+						"Warning",
+						string(pacrdv1alpha1.PipelineValidationFailed),
+						err.Error(),
+					)
+					return r.complete(pipeline, pacrdv1alpha1.PipelineValidationFailed, err)
+				}
+
+				ia.ID = id
+			}
+		}
+	}
+
 	// TODO differentiate between app not found and pipeline not found
 	// FIXME get pipelines does not seem to honor the application name
 	pipeRes, err := r.SpinnakerClient.GetPipelines(pipeline.Spec.Application)

@@ -66,7 +66,7 @@ type OptionValue struct {
 }
 
 // PipelinePhase represents the various stages a pipeline could be in with Spinnaker.
-//+kubebuilder:validation:Enum=ErrorNotFound;Creating;ErrorFailedToCreate;Created;Deleting;ErrorDeletingPipeline;Updated;ErrorUpdatingPipeline
+//+kubebuilder:validation:Enum=ErrorNotFound;Creating;ErrorFailedToCreate;Created;Deleting;ErrorDeletingPipeline;Updated;ErrorUpdatingPipeline;PipelineValidationFailed
 type PipelinePhase string
 
 const (
@@ -86,6 +86,8 @@ const (
 	PipelineUpdateFailed PipelinePhase = "ErrorUpdatingPipeline"
 	// PipelineUpdated indicates that a pipeline was successfully updated upstream.
 	PipelineUpdated PipelinePhase = "Updated"
+	// PipelineValidationFailed indicates that a pipeline failed to validate.
+	PipelineValidationFailed PipelinePhase = "PipelineValidationFailed"
 )
 
 // +kubebuilder:object:root=true
@@ -142,10 +144,15 @@ func (p Pipeline) ToSpinnakerPipeline() (plank.Pipeline, error) {
 	}
 
 	if p.Spec.ExpectedArtifacts != nil {
-		for _, e := range *p.Spec.ExpectedArtifacts {
-			s := structs.New(e)
-			s.TagName = "json"
-			plankPipe.ExpectedArtifacts = append(plankPipe.ExpectedArtifacts, s.Map())
+		for _, a := range *p.Spec.ExpectedArtifacts {
+
+			artifact, err := a.MarshallToMap()
+
+			if err != nil {
+				return plank.Pipeline{}, err // TODO wrap error
+			}
+
+			plankPipe.ExpectedArtifacts = append(plankPipe.ExpectedArtifacts, artifact)
 		}
 	}
 

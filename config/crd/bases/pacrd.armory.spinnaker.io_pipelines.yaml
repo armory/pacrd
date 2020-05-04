@@ -74,18 +74,12 @@ spec:
                       or it wasn't found in a prior execution, the artifact specified
                       here will end up in your pipeline's execution context.
                     properties:
-                      artifactAccount:
-                        type: string
-                      id:
-                        type: string
-                      name:
-                        type: string
-                      string:
-                        type: string
+                      properties:
+                        type: object
                       type:
                         type: string
-                      version:
-                        type: string
+                    required:
+                    - type
                     type: object
                   displayName:
                     description: DisplayName tells Spinnaker how to render this artifact
@@ -103,18 +97,12 @@ spec:
                       \n See the [reference](https://www.spinnaker.io/reference/artifacts/in-pipelines/#expected-artifacts)
                       for more information."
                     properties:
-                      artifactAccount:
-                        type: string
-                      id:
-                        type: string
-                      name:
-                        type: string
-                      string:
-                        type: string
+                      properties:
+                        type: object
                       type:
                         type: string
-                      version:
-                        type: string
+                    required:
+                    - type
                     type: object
                   useDefaultArtifact:
                     description: If true, requires DefaultArtifact to be defined with
@@ -169,8 +157,8 @@ spec:
             stages:
               description: Stages TODO
               items:
-                description: StageUnion is a union type that encompasses strongly
-                  typed stage defnitions.
+                description: Stage is a union type that encompasses strongly typed
+                  stage defnitions.
                 properties:
                   bakeManifest:
                     description: BakeManifest renders a Kubernetes manifest to be
@@ -195,18 +183,12 @@ spec:
                                 the artifact specified here will end up in your pipeline's
                                 execution context.
                               properties:
-                                artifactAccount:
-                                  type: string
-                                id:
-                                  type: string
-                                name:
-                                  type: string
-                                string:
-                                  type: string
+                                properties:
+                                  type: object
                                 type:
                                   type: string
-                                version:
-                                  type: string
+                              required:
+                              - type
                               type: object
                             displayName:
                               description: DisplayName tells Spinnaker how to render
@@ -225,18 +207,12 @@ spec:
                                 is bound to your pipeline context. \n See the [reference](https://www.spinnaker.io/reference/artifacts/in-pipelines/#expected-artifacts)
                                 for more information."
                               properties:
-                                artifactAccount:
-                                  type: string
-                                id:
-                                  type: string
-                                name:
-                                  type: string
-                                string:
-                                  type: string
+                                properties:
+                                  type: object
                                 type:
                                   type: string
-                                version:
-                                  type: string
+                              required:
+                              - type
                               type: object
                             useDefaultArtifact:
                               description: If true, requires DefaultArtifact to be
@@ -259,15 +235,11 @@ spec:
                         type: boolean
                       inputArtifacts:
                         items:
-                          description: ArtifactReference TODO doesn't seem to be working...?
                           properties:
-                            account:
+                            displayName:
                               type: string
                             id:
                               type: string
-                          required:
-                          - account
-                          - id
                           type: object
                         type: array
                       namespace:
@@ -773,18 +745,12 @@ spec:
                                 the artifact specified here will end up in your pipeline's
                                 execution context.
                               properties:
-                                artifactAccount:
-                                  type: string
-                                id:
-                                  type: string
-                                name:
-                                  type: string
-                                string:
-                                  type: string
+                                properties:
+                                  type: object
                                 type:
                                   type: string
-                                version:
-                                  type: string
+                              required:
+                              - type
                               type: object
                             displayName:
                               description: DisplayName tells Spinnaker how to render
@@ -803,18 +769,12 @@ spec:
                                 is bound to your pipeline context. \n See the [reference](https://www.spinnaker.io/reference/artifacts/in-pipelines/#expected-artifacts)
                                 for more information."
                               properties:
-                                artifactAccount:
-                                  type: string
-                                id:
-                                  type: string
-                                name:
-                                  type: string
-                                string:
-                                  type: string
+                                properties:
+                                  type: object
                                 type:
                                   type: string
-                                version:
-                                  type: string
+                              required:
+                              - type
                               type: object
                             useDefaultArtifact:
                               description: If true, requires DefaultArtifact to be
@@ -915,6 +875,7 @@ spec:
               - ErrorDeletingPipeline
               - Updated
               - ErrorUpdatingPipeline
+              - PipelineValidationFailed
               type: string
             url:
               type: string

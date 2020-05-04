@@ -23,6 +23,10 @@
         {
             "typeMatchPrefix": "^github\\.com/knative/pkg/apis/duck/",
             "docsURLTemplate": "https://godoc.org/github.com/knative/pkg/apis/duck/{{arrIndex .PackageSegments -1}}#{{.TypeIdentifier}}"
+        },
+        {
+          "typeMatchPrefix": "^k8s.io/apimachinery/pkg/runtime.RawExtension$",
+          "docsURLTemplate": "https://godoc.org/k8s.io/apimachinery/pkg/runtime#RawExtension"
         }
     ],
     "typeDisplayNamePrefixOverrides": {

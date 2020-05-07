@@ -12,6 +12,11 @@ jobs:
       GRADLE_ARGS: -Partifactory_user=${{secrets.ARTIFACTORY_USER}} -Partifactory_password=${{secrets.ARTIFACTORY_PASSWORD}} --info -x dockerClean -x dockerPrepare
     runs-on: ubuntu-latest
     steps:
+      - name: Cache Build Dependencies
+        uses: actions/cache@v1
+        with:
+          path: ~/.gradle/caches
+          key: gradle-${{ hashFiles('**/*.gradle*') }}
       - name: Checkout Code
         uses: actions/checkout@v2
 

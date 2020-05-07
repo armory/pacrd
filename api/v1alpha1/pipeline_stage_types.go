@@ -86,6 +86,8 @@ type DeployManifest struct {
 	SkipExpressionEvaluation bool `json:"skipExpressionEvaluation,omitempty"`
 	// +optional
 	Source Source `json:"source,omitempty"`
+	// +optional
+	StageTimeoutMs int `json:"stageTimeoutMs,omitempty"`
 }
 
 // Source represents the kind of DeployManifest stage is defined.

@@ -480,6 +480,8 @@ spec:
                         - text
                         - artifact
                         type: string
+                      stageTimeoutMs:
+                        type: integer
                     required:
                     - account
                     - cloudProvider

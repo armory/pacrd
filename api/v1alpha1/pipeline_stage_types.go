@@ -375,6 +375,11 @@ func (su StageUnion) ToSpinnakerStage() (map[string]interface{}, error) {
 		s.TagName = "json"
 		mapified = s.Map()
 
+		//When overrides is not present we need to sent it anyways, otherwise rosco fails
+		if overrideval, ok := mapified["overrides"]; !ok || overrideval == nil {
+			mapified["overrides"] = map[string]string{}
+		}
+
 		var mapifiedArtifacts []map[string]interface{}
 		for _, a := range crd.ExpectedArtifacts {
 			artifact, err := a.MarshallToMap()

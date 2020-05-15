@@ -1,48 +1,40 @@
 apiVersion: pacrd.armory.spinnaker.io/v1alpha1
-kind: Application
-metadata:
-  name: pacrd-deploy-inline-manifest
-spec:
-  email: sam.tribal@armory.io
-  description: Sample deploy inline manifest stage.
----
-#DeployManifest
-apiVersion: pacrd.armory.spinnaker.io/v1alpha1
 kind: Pipeline
 metadata:
-  name: pacrd-deploy-stage-timeout-ms
+  name: pacrd-deploymanifest-samples
 spec:
-  description: Samples for DeployManifest
-  application: &app-name pacrd-deploy-inline-manifest
+  description: A sample showing how to define artifacts.
+  application: &app-name pacrd-pipeline-stages-samples
+  expectedArtifacts:
+    - id: &image-id my-artifact
+      displayName: *image-id
+      matchArtifact: &manifest-repo-artifact
+        type: docker/image
+        properties:
+          name: my-organization/my-container
+          artifactAccount: docker-registry
+      defaultArtifact:
+        <<: *manifest-repo-artifact
+      useDefaultArtifact: true
   stages:
-    - type: ManualJudgment
-      name: Should we start?
-      refId: "1"
-      manualJudgment: {}
     - type: DeployManifest
-      name: Deploy Canary
-      refId: '2'
-      requisiteStageRefIds: [ "1" ]
+      name: Deploy manifest example
+      refId: "1"
       deployManifest:
         account: kubernetes
         cloudProvider: kubernetes
-        completeOtherBranchesThenFail: false
-        continuePipeline: true
-        failPipeline: false
-        manifestArtifactAccount: embedded-artifact
-        manifestArtifactId: "some-uuid"
-        moniker:
-          app: *app-name
-        relationships:
-          loadBalancers: []
-          securityGroups: []
+        moniker: 
+          app: superimportantapp
+        name: Deploy (Manifest)
+        manifestArtifactId: *image-id
+        namespaceOverride: jossuegamez
+        requiredArtifactIds: [ "my-artifact" ]
         skipExpressionEvaluation: true
         source: artifact
-        stageEnabled:
-          expression: "${parameters.canary_deploy} == true"
-          type: expression
-        stageTimeoutMs: 600000
         trafficManagement:
-          enabled: false
-          options:
-            enableTraffic: false
+          enabled: true
+          options: 
+            enableTraffic: true
+            namespace: jossuegamez
+            services: [ "servicea", "serviceb" ]
+            strategy: redblack

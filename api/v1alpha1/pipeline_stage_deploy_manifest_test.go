@@ -30,11 +30,9 @@ spec:
 				Name:  name,
 				RefID: string(refId),
 				DeployManifest: DeployManifest{
-					Account:                       account,
-					CloudProvider:                 cloudProvider,
-					CompleteOtherBranchesThenFail: completeThenFail,
-					FailPipeline:                  failPipeline,
-					Manifests:                     []string{sampleYaml},
+					Account:       account,
+					CloudProvider: cloudProvider,
+					Manifests:     []string{sampleYaml},
 				},
 			}
 
@@ -80,12 +78,10 @@ func TestToSpinnakerStage_DeployManifest_ArtifactHappyPath(t *testing.T) {
 				Name:  name,
 				RefID: string(refId),
 				DeployManifest: DeployManifest{
-					Account:                       account,
-					CloudProvider:                 cloudProvider,
-					CompleteOtherBranchesThenFail: completeThenFail,
-					FailPipeline:                  failPipeline,
-					ManifestArtifactAccount:       account,
-					ManifestArtifactID:            artifactId,
+					Account:                 account,
+					CloudProvider:           cloudProvider,
+					ManifestArtifactAccount: account,
+					ManifestArtifactID:      artifactId,
 				},
 			}
 

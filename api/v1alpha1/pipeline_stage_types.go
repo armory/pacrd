@@ -66,15 +66,14 @@ type StageUnion struct {
 }
 
 // DeployManifest deploys a Kubernetes manifest to a target Kubernetes cluster. Spinnaker will periodically check the status of the manifest to make sure the manifest converges on the target cluster until it reaches a timeout
-// FIXME: trafficManagement, relationships
 type DeployManifest struct {
 	// Account is the configured account to deploy to.
 	Account string `json:"account"`
 	// CloudProvider is the type of cloud provider used by the selected account.
-	CloudProvider                 string `json:"cloudProvider"`
-	CompleteOtherBranchesThenFail bool   `json:"completeOtherBranchesThenFail"`
-	ContinuePipeline              bool   `json:"continuePipeline"`
-	FailPipeline                  bool   `json:"failPipeline"`
+	CloudProvider string `json:"cloudProvider"`
+	//CompleteOtherBranchesThenFail bool   `json:"completeOtherBranchesThenFail"`
+	//ContinuePipeline              bool   `json:"continuePipeline"`
+	//FailPipeline                  bool   `json:"failPipeline"`
 	// +optional
 	ManifestArtifactAccount string `json:"manifestArtifactAccount,omitempty"`
 	// +optional
@@ -87,8 +86,41 @@ type DeployManifest struct {
 	// +optional
 	Source Source `json:"source,omitempty"`
 	// +optional
-	StageTimeoutMs int `json:"stageTimeoutMs,omitempty"`
+	ManifestArtifact MatchArtifact `json:"manifestArtifact,omitempty"`
+	// +optional
+	NamespaceOverride string `json:"namespaceOverride,omitempty"`
+	// +optional
+	RequiredArtifacts []Artifact `json:"requiredArtifacts,omitempty"`
+	// +optional
+	RequiredArtifactIds []string `json:"requiredArtifactIds,omitempty"`
+	// Spinnaker manages traffic based on your selected strategy
+	// +optional
+	TrafficManagement `json:"trafficManagement,omitempty"`
 }
+
+// Spinnaker manages traffic based on your selected strategy
+type TrafficManagement struct {
+	// Allow Spinnaker to associate each ReplicaSet deployed in this stage with one or more Services
+	// and manage traffic based on your selected rollout strategy options.
+	Enabled bool `json:"enabled,omitempty"`
+	// +optional
+	TrafficManagementOptions `json:"options,omitempty"`
+}
+
+// TrafficManagementOptions
+type TrafficManagementOptions struct {
+	// Send client requests to new pods
+	EnableTraffic             bool     `json:"enableTraffic,omitempty"`
+	Namespace                 string   `json:"namespace,omitempty"`
+	Services                  []string `json:"services,omitempty"`
+	TrafficManagementStrategy `json:"strategy,omitempty"`
+}
+
+// Tells Spinnaker what to do with the previous version(s) of the ReplicaSet in the cluster.
+// Redblack: Disables all previous ReplicaSet as soon as the new ReplicaSet is ready.
+// Highlander: Destroys all previous ReplicaSet as soon as the new ReplicaSet is ready.
+// +kubebuilder:validation:Enum=redblack;highlander
+type TrafficManagementStrategy string
 
 // Source represents the kind of DeployManifest stage is defined.
 // +kubebuilder:validation:Enum=text;artifact
@@ -438,7 +470,7 @@ func (su StageUnion) ToSpinnakerStage() (map[string]interface{}, error) {
 		s.TagName = "json"
 		mapified = s.Map()
 
-		if mapified["manifests"] != nil {
+		if _, ok := mapified["manifests"]; ok {
 			manifests := mapified["manifests"].([]string)
 			if len(manifests) > 0 {
 				var finalManifests []map[string]interface{}

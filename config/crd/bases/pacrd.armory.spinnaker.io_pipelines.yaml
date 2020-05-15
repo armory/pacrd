@@ -449,13 +449,19 @@ spec:
                         description: CloudProvider is the type of cloud provider used
                           by the selected account.
                         type: string
-                      completeOtherBranchesThenFail:
-                        type: boolean
-                      continuePipeline:
-                        type: boolean
-                      failPipeline:
-                        type: boolean
+                      manifestArtifact:
+                        properties:
+                          properties:
+                            type: object
+                          type:
+                            type: string
+                        required:
+                        - type
+                        type: object
                       manifestArtifactAccount:
+                        description: CompleteOtherBranchesThenFail bool   `json:"completeOtherBranchesThenFail"`
+                          ContinuePipeline              bool   `json:"continuePipeline"`
+                          FailPipeline                  bool   `json:"failPipeline"`
                         type: string
                       manifestArtifactId:
                         type: string
@@ -471,6 +477,70 @@ spec:
                         required:
                         - app
                         type: object
+                      namespaceOverride:
+                        type: string
+                      requiredArtifactIds:
+                        items:
+                          type: string
+                        type: array
+                      requiredArtifacts:
+                        items:
+                          description: Artifact is an object that references an external
+                            resource. It could be a Docker container, file in source
+                            control, AMI, or binary blob in S3, etc.
+                          properties:
+                            defaultArtifact:
+                              description: If your artifact either wasn't supplied
+                                from a trigger, or it wasn't found in a prior execution,
+                                the artifact specified here will end up in your pipeline's
+                                execution context.
+                              properties:
+                                properties:
+                                  type: object
+                                type:
+                                  type: string
+                              required:
+                              - type
+                              type: object
+                            displayName:
+                              description: DisplayName tells Spinnaker how to render
+                                this artifact in the UI.
+                              type: string
+                            id:
+                              description: ID is a unique identifier for this artifact.
+                                IDs must only be unique for the pipeline they are
+                                declared in.
+                              type: string
+                            matchArtifact:
+                              description: "This specifies which fields in your incoming
+                                artifact to match against. Every field that you supply
+                                will be used to match against all incoming artifacts.
+                                If all specified fields match, the incoming artifact
+                                is bound to your pipeline context. \n See the [reference](https://www.spinnaker.io/reference/artifacts/in-pipelines/#expected-artifacts)
+                                for more information."
+                              properties:
+                                properties:
+                                  type: object
+                                type:
+                                  type: string
+                              required:
+                              - type
+                              type: object
+                            useDefaultArtifact:
+                              description: If true, requires DefaultArtifact to be
+                                defined with a fallback artifact to use.
+                              type: boolean
+                            usePriorArtifact:
+                              description: "Attempt to match against an artifact in
+                                the prior pipeline execution's context. \n See the
+                                [reference](https://www.spinnaker.io/reference/artifacts/in-pipelines)
+                                for more information."
+                              type: boolean
+                          required:
+                          - displayName
+                          - id
+                          type: object
+                        type: array
                       skipExpressionEvaluation:
                         type: boolean
                       source:
@@ -482,12 +552,44 @@ spec:
                         type: string
                       stageTimeoutMs:
                         type: integer
+                      trafficManagement:
+                        description: Spinnaker manages traffic based on your selected
+                          strategy
+                        properties:
+                          enabled:
+                            description: Allow Spinnaker to associate each ReplicaSet
+                              deployed in this stage with one or more Services and
+                              manage traffic based on your selected rollout strategy
+                              options.
+                            type: boolean
+                          options:
+                            description: TrafficManagementOptions
+                            properties:
+                              enableTraffic:
+                                description: Send client requests to new pods
+                                type: boolean
+                              namespace:
+                                type: string
+                              services:
+                                items:
+                                  type: string
+                                type: array
+                              strategy:
+                                description: 'Tells Spinnaker what to do with the
+                                  previous version(s) of the ReplicaSet in the cluster.
+                                  Redblack: Disables all previous ReplicaSet as soon
+                                  as the new ReplicaSet is ready. Highlander: Destroys
+                                  all previous ReplicaSet as soon as the new ReplicaSet
+                                  is ready.'
+                                enum:
+                                - redblack
+                                - highlander
+                                type: string
+                            type: object
+                        type: object
                     required:
                     - account
                     - cloudProvider
-                    - completeOtherBranchesThenFail
-                    - continuePipeline
-                    - failPipeline
                     - moniker
                     type: object
                   findArtifactsFromResource:

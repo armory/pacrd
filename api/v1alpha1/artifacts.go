@@ -68,6 +68,8 @@ type ArtifactReference struct {
 	ID string `json:"id,omitempty"`
 	// +optional
 	DisplayName string `json:"displayName,omitempty"`
+	// +optional
+	Account string `json:"account,omitempty"`
 }
 
 type ErrNameUndefined struct {

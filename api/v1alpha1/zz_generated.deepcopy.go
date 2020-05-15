@@ -195,6 +195,7 @@ func (in *BakeManifest) DeepCopyInto(out *BakeManifest) {
 			}
 		}
 	}
+	out.InputArtifact = in.InputArtifact
 	if in.Overrides != nil {
 		in, out := &in.Overrides, &out.Overrides
 		*out = make(map[string]string, len(*in))

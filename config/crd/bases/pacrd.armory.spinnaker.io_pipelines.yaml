@@ -233,15 +233,32 @@ spec:
                         type: boolean
                       failPipeline:
                         type: boolean
+                      inputArtifact:
+                        description: InputArtifact is used by the Kustomize variant
+                          of BakeManifest to pull in a single artifact.
+                        properties:
+                          account:
+                            type: string
+                          displayName:
+                            type: string
+                          id:
+                            type: string
+                        type: object
                       inputArtifacts:
                         items:
                           properties:
+                            account:
+                              type: string
                             displayName:
                               type: string
                             id:
                               type: string
                           type: object
                         type: array
+                      kustomizeFilePath:
+                        description: KustomizeFilePath is the relative path to the
+                          kustomize.yaml file in the given artifact.
+                        type: string
                       namespace:
                         type: string
                       outputName:
@@ -459,9 +476,6 @@ spec:
                         - type
                         type: object
                       manifestArtifactAccount:
-                        description: CompleteOtherBranchesThenFail bool   `json:"completeOtherBranchesThenFail"`
-                          ContinuePipeline              bool   `json:"continuePipeline"`
-                          FailPipeline                  bool   `json:"failPipeline"`
                         type: string
                       manifestArtifactId:
                         type: string

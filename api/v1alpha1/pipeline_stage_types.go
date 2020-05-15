@@ -71,9 +71,6 @@ type DeployManifest struct {
 	Account string `json:"account"`
 	// CloudProvider is the type of cloud provider used by the selected account.
 	CloudProvider string `json:"cloudProvider"`
-	//CompleteOtherBranchesThenFail bool   `json:"completeOtherBranchesThenFail"`
-	//ContinuePipeline              bool   `json:"continuePipeline"`
-	//FailPipeline                  bool   `json:"failPipeline"`
 	// +optional
 	ManifestArtifactAccount string `json:"manifestArtifactAccount,omitempty"`
 	// +optional
@@ -96,6 +93,8 @@ type DeployManifest struct {
 	// Spinnaker manages traffic based on your selected strategy
 	// +optional
 	TrafficManagement `json:"trafficManagement,omitempty"`
+	// +optional
+	StageTimeoutMs int `json:"stageTimeoutMs,omitempty"`
 }
 
 // Spinnaker manages traffic based on your selected strategy
@@ -239,6 +238,9 @@ type BakeManifest struct {
 	EvaluateOverrideExpressions bool                 `json:"evaluateOverrideExpressions,omitempty"`
 	ExpectedArtifacts           []Artifact           `json:"expectedArtifacts,omitempty"`
 	InputArtifacts              []*ArtifactReference `json:"inputArtifacts,omitempty"`
+	// InputArtifact is used by the Kustomize variant of BakeManifest to pull in a single artifact.
+	// +optional
+	InputArtifact ArtifactReference `json:"inputArtifact,omitempty"`
 	// +optional
 	OutputName string `json:"outputName,omitempty"`
 	// +optional
@@ -246,6 +248,9 @@ type BakeManifest struct {
 	// +optional
 	RawOverrides     bool   `json:"rawOverrides,omitempty"`
 	TemplateRenderer string `json:"templateRenderer,omitempty"`
+	// KustomizeFilePath is the relative path to the kustomize.yaml file in the given artifact.
+	// +optional
+	KustomizeFilePath string `json:"kustomizeFilePath,omitempty"`
 }
 
 // FindArtifactsFromResource represents the stage of the same name in Spinnaker.

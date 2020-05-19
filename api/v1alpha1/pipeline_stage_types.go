@@ -83,7 +83,7 @@ type DeployManifest struct {
 	// +optional
 	Source Source `json:"source,omitempty"`
 	// +optional
-	ManifestArtifact MatchArtifact `json:"manifestArtifact,omitempty"`
+	ManifestArtifact *MatchArtifact `json:"manifestArtifact,omitempty"`
 	// +optional
 	NamespaceOverride string `json:"namespaceOverride,omitempty"`
 	// +optional
@@ -234,10 +234,13 @@ type BakeManifest struct {
 	// +optional
 	CompleteOtherBranchesThenFail *bool `json:"completeOtherBranchesThenFail,omitempty"`
 	// +optional
-	Namespace                   string               `json:"namespace,omitempty"`
-	EvaluateOverrideExpressions bool                 `json:"evaluateOverrideExpressions,omitempty"`
-	ExpectedArtifacts           []Artifact           `json:"expectedArtifacts,omitempty"`
-	InputArtifacts              []*ArtifactReference `json:"inputArtifacts,omitempty"`
+	Namespace string `json:"namespace,omitempty"`
+	// +optional
+	EvaluateOverrideExpressions bool `json:"evaluateOverrideExpressions,omitempty"`
+	// +optional
+	ExpectedArtifacts []Artifact `json:"expectedArtifacts,omitempty"`
+	// +optional
+	InputArtifacts []*ArtifactReference `json:"inputArtifacts,omitempty"`
 	// InputArtifact is used by the Kustomize variant of BakeManifest to pull in a single artifact.
 	// +optional
 	InputArtifact ArtifactReference `json:"inputArtifact,omitempty"`

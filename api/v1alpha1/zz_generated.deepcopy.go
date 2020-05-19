@@ -344,7 +344,11 @@ func (in *DeployManifest) DeepCopyInto(out *DeployManifest) {
 		copy(*out, *in)
 	}
 	out.Moniker = in.Moniker
-	in.ManifestArtifact.DeepCopyInto(&out.ManifestArtifact)
+	if in.ManifestArtifact != nil {
+		in, out := &in.ManifestArtifact, &out.ManifestArtifact
+		*out = new(MatchArtifact)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.RequiredArtifacts != nil {
 		in, out := &in.RequiredArtifacts, &out.RequiredArtifacts
 		*out = make([]Artifact, len(*in))

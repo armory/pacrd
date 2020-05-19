@@ -36,10 +36,10 @@ type StageUnion struct {
 	RestrictExecutionDuringTimeWindow bool `json:"restrictExecutionDuringTimeWindow,omitempty"`
 	// RestrictedExecutionWindow provides the ability to restrict the hours during which this stage can run.
 	// +optional
-	RestrictedExecutionWindow `json:"restrictedExecutionWindow,omitempty"`
+	RestrictedExecutionWindow `json:"restrictedExecutionWindow"`
 	// SkipWindowText is the text to display when this stage is skipped.
 	// +optional
-	SkipWindowText string `json:"skipWindowText,omitempty"`
+	SkipWindowText string `json:"skipWindowText"`
 	//BakeManifest renders a Kubernetes manifest to be applied to a target cluster at a later stage. The manifests can be rendered using HELM2 or Kustomize.
 	// +optional
 	BakeManifest `json:"bakeManifest,omitempty"`
@@ -274,15 +274,16 @@ type StageEnabled struct {
 
 // ManualJudgment TODO description
 type ManualJudgment struct {
-	Name           string           `json:"name,omitempty"`
-	FailPipeline   bool             `json:"failPipeline,omitempty"`
-	Instructions   string           `json:"instructions,omitempty"`
-	JudgmentInputs *[]JudgmentInput `json:"judgmentInputs,omitempty"` // No, the json annotation is not spelled incorrectly.
-	StageTimeoutMs int              `json:"stageTimeoutMs,omitempty"`
+	Name           string `json:"name,omitempty"`
+	FailPipeline   bool   `json:"failPipeline,omitempty"`
+	Instructions   string `json:"instructions,omitempty"`
+	StageTimeoutMs int    `json:"stageTimeoutMs,omitempty"`
 	// +optional
 	SendNotifications bool `json:"sendNotifications,omitempty"`
 	// +optional
-	Notifications []ManualJudgmentNotification `json:"notifications,omitempty"`
+	Notifications []ManualJudgmentNotification `json:"notifications"`
+	// +optional
+	JudgmentInputs []JudgmentInput `json:"judgmentInputs"` // No, the json annotation is not spelled incorrectly.
 }
 
 // JudgmentInput TODO description
@@ -439,6 +440,10 @@ func (su StageUnion) ToSpinnakerStage() (map[string]interface{}, error) {
 		s := structs.New(crdStage.(ManualJudgment))
 		s.TagName = "json"
 		mapified = s.Map()
+
+		if _, ok := mapified["failPipeline"]; !ok {
+			mapified["failPipeline"] = true
+		}
 	case "DeleteManifest":
 		s := structs.New(crdStage.(DeleteManifest))
 		s.TagName = "json"

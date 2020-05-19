@@ -5,4 +5,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: armory/pacrd
-  newTag: 0.7.1
+  newTag: 0.8.0-dev.2.fix.mj.notifications.64b603e

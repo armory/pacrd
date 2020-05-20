@@ -528,7 +528,6 @@ func (su StageUnion) ToSpinnakerStage() (map[string]interface{}, error) {
 	mapified["type"] = strcase.ToLowerCamel(crdType)
 	mapified["name"] = su.Name
 	mapified["refId"] = su.RefID
-	mapified["requisiteStageRefIds"] = su.RequisiteStageRefIds
 	mapified["comments"] = su.Comments
 	mapified["restrictExecutionDuringTimeWindow"] = su.RestrictExecutionDuringTimeWindow
 	mapified["restrictedExecutionWindow"] = su.RestrictedExecutionWindow
@@ -537,6 +536,12 @@ func (su StageUnion) ToSpinnakerStage() (map[string]interface{}, error) {
 		s := structs.New(su.StageEnabled)
 		s.TagName = "json"
 		mapified["stageEnabled"] = s.Map()
+	}
+	// Always should be empty, not nil
+	if su.RequisiteStageRefIds == nil {
+		mapified["requisiteStageRefIds"] = []string{}
+	} else {
+		mapified["requisiteStageRefIds"] = su.RequisiteStageRefIds
 	}
 
 	return mapified, nil

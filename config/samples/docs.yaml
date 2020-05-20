@@ -20,7 +20,6 @@ spec:
     - type: ManualJudgment
       name: Bake Successful?
       refId: "2"
-      requisiteStageRefIds: [ "1" ]
       manualJudgment:
         comments: Was the bake successful?
         failPipeline: true

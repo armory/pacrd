@@ -444,6 +444,11 @@ func (su StageUnion) ToSpinnakerStage() (map[string]interface{}, error) {
 		if _, ok := mapified["failPipeline"]; !ok {
 			mapified["failPipeline"] = true
 		}
+
+		// Fill it with an empty slice in case of nil just to be extra secure
+		if mapified["notifications"] == nil {
+			mapified["notifications"] = []string{}
+		}
 	case "DeleteManifest":
 		s := structs.New(crdStage.(DeleteManifest))
 		s.TagName = "json"

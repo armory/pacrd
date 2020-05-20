@@ -25,7 +25,7 @@ easily do this with the following command:
 
 ```
 make manifests &&\
-  kubectl apply -f /config/crd/bases/
+  kubectl apply -f config/crd/bases/
 ```
 
 You should see something like the following output:

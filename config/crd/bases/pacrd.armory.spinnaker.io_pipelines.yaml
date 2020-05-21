@@ -968,6 +968,18 @@ spec:
                 - type
                 type: object
               type: array
+            triggers:
+              description: Triggers represent the ways in which
+              items:
+                properties:
+                  properties:
+                    type: object
+                  type:
+                    type: string
+                required:
+                - type
+                type: object
+              type: array
           required:
           - stages
           type: object

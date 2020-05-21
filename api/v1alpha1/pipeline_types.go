@@ -41,6 +41,9 @@ type PipelineSpec struct {
 	KeepWaitingPipelines bool `json:"keepWaitingPipelines,omitempty"`
 	// Stages TODO
 	Stages []StageUnion `json:"stages"`
+	// Triggers represent the ways in which
+	// +optional
+	Triggers *[]Trigger `json:"triggers,omitempty"`
 }
 
 type Parameter struct {
@@ -141,6 +144,19 @@ func (p Pipeline) ToSpinnakerPipeline() (plank.Pipeline, error) {
 		Parallel:             p.Spec.AllowParallelExecutions,
 		LimitConcurrent:      p.Spec.LimitConcurrent,
 		KeepWaitingPipelines: p.Spec.KeepWaitingPipelines,
+	}
+
+	if p.Spec.Triggers != nil {
+		plankPipe.Triggers = []map[string]interface{}{}
+		for _, t := range *p.Spec.Triggers {
+			st, err := t.ToTrigger()
+
+			if err != nil {
+				return plankPipe, err
+			}
+
+			plankPipe.Triggers = append(plankPipe.Triggers, st.MarshallToMap())
+		}
 	}
 
 	if p.Spec.ExpectedArtifacts != nil {

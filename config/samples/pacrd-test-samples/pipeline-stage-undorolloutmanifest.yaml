@@ -11,6 +11,8 @@ spec:
       name: Should we start?
       refId: "1"
       manualJudgment:
+        failPipeline: true
+        instructions: Check if this stage works
     - type: UndoRolloutManifest
       name: Static target
       refId: "2"

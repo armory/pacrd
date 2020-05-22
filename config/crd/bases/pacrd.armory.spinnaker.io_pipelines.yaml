@@ -622,6 +622,12 @@ spec:
                         type: string
                       mode:
                         type: string
+                    required:
+                    - account
+                    - cloudProvider
+                    - location
+                    - manifestName
+                    - mode
                     type: object
                   manualJudgment:
                     description: ManualJudgment stage pauses pipeline execution until

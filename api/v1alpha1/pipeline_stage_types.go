@@ -139,7 +139,7 @@ type Moniker struct {
 
 type CheckPreconditions struct {
 	// +optional
-	Preconditions *[]Precondition `json:"preconditions,omitempty"`
+	Preconditions []Precondition `json:"preconditions"`
 }
 
 // Precondition TODO likely needs to be refined to support more than expressions
@@ -202,7 +202,7 @@ type DeleteManifest struct {
 	// +optional
 	LabelSelector `json:"labelSelectors,omitempty"`
 	// +optional
-	Options *Options `json:"options,omitempty"`
+	Options `json:"options"`
 	// +optional
 	Cluster string `json:"cluster,omitempty"`
 	// +optional
@@ -240,7 +240,7 @@ type BakeManifest struct {
 	// +optional
 	ExpectedArtifacts []Artifact `json:"expectedArtifacts,omitempty"`
 	// +optional
-	InputArtifacts []*ArtifactReference `json:"inputArtifacts,omitempty"`
+	InputArtifacts []*ArtifactReference `json:"inputArtifacts"`
 	// InputArtifact is used by the Kustomize variant of BakeManifest to pull in a single artifact.
 	// +optional
 	InputArtifact ArtifactReference `json:"inputArtifact,omitempty"`
@@ -258,12 +258,12 @@ type BakeManifest struct {
 
 // FindArtifactsFromResource represents the stage of the same name in Spinnaker.
 type FindArtifactsFromResource struct {
-	Account       string `json:"account,omitempty"`
+	Account       string `json:"account"`
 	App           string `json:"app,omitempty"`
-	CloudProvider string `json:"cloudProvider,omitempty"`
-	Location      string `json:"location,omitempty"`
-	ManifestName  string `json:"manifestName,omitempty"`
-	Mode          string `json:"mode,omitempty"` // FIXME enum static/dynamic
+	CloudProvider string `json:"cloudProvider"`
+	Location      string `json:"location"`
+	Mode          string `json:"mode"` // FIXME enum static/dynamic
+	ManifestName  string `json:"manifestName"`
 }
 
 // StageEnabled represents whether this stage is active in a pipeline graph.
@@ -463,6 +463,12 @@ func (su StageUnion) ToSpinnakerStage() (map[string]interface{}, error) {
 			}
 
 			mapified["manifestName"] = manifestName
+		}
+		if mapInterfaceOptions, ok := mapified["options"]; ok {
+			options := mapInterfaceOptions.(map[string]interface{})
+			if _, ok := options["gracePeriodSeconds"]; !ok {
+				options["gracePeriodSeconds"] = nil
+			}
 		}
 	case "UndoRolloutManifest":
 		s := structs.New(crdStage.(UndoRolloutManifest))

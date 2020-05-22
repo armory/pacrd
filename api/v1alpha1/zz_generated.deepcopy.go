@@ -220,13 +220,9 @@ func (in *CheckPreconditions) DeepCopyInto(out *CheckPreconditions) {
 	*out = *in
 	if in.Preconditions != nil {
 		in, out := &in.Preconditions, &out.Preconditions
-		*out = new([]Precondition)
-		if **in != nil {
-			in, out := *in, *out
-			*out = make([]Precondition, len(*in))
-			for i := range *in {
-				(*in)[i].DeepCopyInto(&(*out)[i])
-			}
+		*out = make([]Precondition, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
 }
@@ -313,11 +309,7 @@ func (in *DataSources) DeepCopy() *DataSources {
 func (in *DeleteManifest) DeepCopyInto(out *DeleteManifest) {
 	*out = *in
 	in.LabelSelector.DeepCopyInto(&out.LabelSelector)
-	if in.Options != nil {
-		in, out := &in.Options, &out.Options
-		*out = new(Options)
-		**out = **in
-	}
+	out.Options = in.Options
 	if in.Kinds != nil {
 		in, out := &in.Kinds, &out.Kinds
 		*out = make([]KubernetesKind, len(*in))

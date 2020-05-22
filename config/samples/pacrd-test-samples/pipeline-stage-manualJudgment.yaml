@@ -1,0 +1,15 @@
+# file: pipeline.yaml
+apiVersion: pacrd.armory.spinnaker.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: pacrd-manualjudgment-samples
+spec:
+  description: Manual Judgment pipeline sample
+  application: &app-name pacrd-pipeline-stages-samples
+  stages:
+    - type: ManualJudgment
+      name: Manual example
+      refId: "1"
+      manualJudgment:
+        failPipeline: true
+        instructions: Check if this stage works

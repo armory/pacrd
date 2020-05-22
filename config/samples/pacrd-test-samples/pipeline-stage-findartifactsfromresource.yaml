@@ -1,0 +1,19 @@
+# file: pipeline.yaml
+apiVersion: pacrd.armory.spinnaker.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: pacrd-findartifactsfromresource-samples
+spec:
+  description: Find Artifacts From Resource pipeline sample
+  application: &app-name pacrd-pipeline-stages-samples
+  stages:
+    - type: FindArtifactsFromResource
+      refId: "1"
+      name: Find Baseline
+      findArtifactsFromResource:
+        account: jossuegamez
+        app: *app-name
+        cloudProvider: kubernetes
+        location: jossuegamez
+        manifestName: deployment something
+        mode: static

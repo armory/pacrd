@@ -220,9 +220,13 @@ func (in *CheckPreconditions) DeepCopyInto(out *CheckPreconditions) {
 	*out = *in
 	if in.Preconditions != nil {
 		in, out := &in.Preconditions, &out.Preconditions
-		*out = make([]Precondition, len(*in))
+		*out = make([]*Precondition, len(*in))
 		for i := range *in {
-			(*in)[i].DeepCopyInto(&(*out)[i])
+			if (*in)[i] != nil {
+				in, out := &(*in)[i], &(*out)[i]
+				*out = new(Precondition)
+				(*in).DeepCopyInto(*out)
+			}
 		}
 	}
 }
@@ -309,7 +313,11 @@ func (in *DataSources) DeepCopy() *DataSources {
 func (in *DeleteManifest) DeepCopyInto(out *DeleteManifest) {
 	*out = *in
 	in.LabelSelector.DeepCopyInto(&out.LabelSelector)
-	out.Options = in.Options
+	if in.Options != nil {
+		in, out := &in.Options, &out.Options
+		*out = new(Options)
+		**out = **in
+	}
 	if in.Kinds != nil {
 		in, out := &in.Kinds, &out.Kinds
 		*out = make([]KubernetesKind, len(*in))
@@ -508,9 +516,13 @@ func (in *ManualJudgment) DeepCopyInto(out *ManualJudgment) {
 	*out = *in
 	if in.Notifications != nil {
 		in, out := &in.Notifications, &out.Notifications
-		*out = make([]ManualJudgmentNotification, len(*in))
+		*out = make([]*ManualJudgmentNotification, len(*in))
 		for i := range *in {
-			(*in)[i].DeepCopyInto(&(*out)[i])
+			if (*in)[i] != nil {
+				in, out := &(*in)[i], &(*out)[i]
+				*out = new(ManualJudgmentNotification)
+				(*in).DeepCopyInto(*out)
+			}
 		}
 	}
 	if in.JudgmentInputs != nil {

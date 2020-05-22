@@ -93,7 +93,7 @@ func TestStageUnion_ToSpinnakerStage_vs_Deck(t *testing.T) {
       "mode": "static",
       "name": "Delete (Manifest)",
       "options": {
-        "cascading": false,
+        "cascading": true,
         "gracePeriodSeconds": null
       },
       "refId": "1",

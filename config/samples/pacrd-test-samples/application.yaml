@@ -1,7 +1,7 @@
 apiVersion: pacrd.armory.spinnaker.io/v1alpha1
 kind: Application
 metadata:
-  name: read-only
+  name: pacrd-pipeline-stages-samples
 spec:
   email: sam.tribal@armory.io
   description: did that work lol

@@ -1,24 +1,16 @@
-apiVersion: pacrd.armory.spinnaker.io/v1alpha1
-kind: Application
-metadata:
-  name: pacrd-undorollout-samples
-spec:
-  email: sam.tribal@armory.io
-  description: Sample undo-rollout stage.
----
 #DeleteManifest
 apiVersion: pacrd.armory.spinnaker.io/v1alpha1
 kind: Pipeline
 metadata:
   name: pacrd-undorollout-samples
 spec:
-  description: Samples for DeleteManifest
-  application: &app-name pacrd-undorollout-samples
+  description: Samples for undorollout
+  application: &app-name pacrd-pipeline-stages-samples
   stages:
     - type: ManualJudgment
       name: Should we start?
       refId: "1"
-      manualJudgment: {}
+      manualJudgment:
     - type: UndoRolloutManifest
       name: Static target
       refId: "2"
@@ -28,7 +20,6 @@ spec:
         app: *app-name
         cloudProvider: kubernetes
         location: &location ffreire
-        numRevisionsBack: 1
         mode: static
         kind: apiService
         targetName: testingName

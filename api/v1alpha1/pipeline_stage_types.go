@@ -139,7 +139,7 @@ type Moniker struct {
 
 type CheckPreconditions struct {
 	// +optional
-	Preconditions []Precondition `json:"preconditions"`
+	Preconditions []*Precondition `json:"preconditions,omitempty"`
 }
 
 // Precondition TODO likely needs to be refined to support more than expressions
@@ -202,7 +202,7 @@ type DeleteManifest struct {
 	// +optional
 	LabelSelector `json:"labelSelectors,omitempty"`
 	// +optional
-	Options `json:"options"`
+	Options *Options `json:"options,omitempty"`
 	// +optional
 	Cluster string `json:"cluster,omitempty"`
 	// +optional
@@ -240,7 +240,7 @@ type BakeManifest struct {
 	// +optional
 	ExpectedArtifacts []Artifact `json:"expectedArtifacts,omitempty"`
 	// +optional
-	InputArtifacts []*ArtifactReference `json:"inputArtifacts"`
+	InputArtifacts []*ArtifactReference `json:"inputArtifacts,omitempty"`
 	// InputArtifact is used by the Kustomize variant of BakeManifest to pull in a single artifact.
 	// +optional
 	InputArtifact ArtifactReference `json:"inputArtifact,omitempty"`
@@ -278,12 +278,12 @@ type ManualJudgment struct {
 	FailPipeline   bool   `json:"failPipeline,omitempty"`
 	Instructions   string `json:"instructions,omitempty"`
 	StageTimeoutMs int    `json:"stageTimeoutMs,omitempty"`
-	// +optional
+	//+optional
 	SendNotifications bool `json:"sendNotifications,omitempty"`
-	// +optional
-	Notifications []ManualJudgmentNotification `json:"notifications"`
-	// +optional
-	JudgmentInputs []JudgmentInput `json:"judgmentInputs"` // No, the json annotation is not spelled incorrectly.
+	//+optional
+	Notifications []*ManualJudgmentNotification `json:"notifications,omitempty"`
+	//+optional
+	JudgmentInputs []JudgmentInput `json:"judgmentInputs,omitempty"`
 }
 
 // JudgmentInput TODO description
@@ -432,6 +432,8 @@ func (su StageUnion) ToSpinnakerStage() (map[string]interface{}, error) {
 			mapifiedArtifacts = append(mapifiedArtifacts, artifact)
 		}
 		mapified["expectedArtifacts"] = mapifiedArtifacts
+
+		fillSliceIfNeeded(mapified, "inputArtifacts")
 	case "FindArtifactsFromResource":
 		s := structs.New(crdStage.(FindArtifactsFromResource))
 		s.TagName = "json"
@@ -445,10 +447,8 @@ func (su StageUnion) ToSpinnakerStage() (map[string]interface{}, error) {
 			mapified["failPipeline"] = true
 		}
 
-		// Fill it with an empty slice in case of nil just to be extra secure
-		if mapified["notifications"] == nil {
-			mapified["notifications"] = []string{}
-		}
+		fillSliceIfNeeded(mapified, "notifications")
+		fillSliceIfNeeded(mapified, "judgmentInputs")
 	case "DeleteManifest":
 		s := structs.New(crdStage.(DeleteManifest))
 		s.TagName = "json"
@@ -464,8 +464,16 @@ func (su StageUnion) ToSpinnakerStage() (map[string]interface{}, error) {
 
 			mapified["manifestName"] = manifestName
 		}
-		if mapInterfaceOptions, ok := mapified["options"]; ok {
-			options := mapInterfaceOptions.(map[string]interface{})
+		if _, ok := mapified["options"]; !ok {
+			optionsMap := make(map[string]interface{})
+			optionsMap["cascading"] = true
+			optionsMap["gracePeriodSeconds"] = nil
+			mapified["options"] = optionsMap
+		} else {
+			options := mapified["options"].(map[string]interface{})
+			if _, ok := options["cascading"]; !ok {
+				options["cascading"] = true
+			}
 			if _, ok := options["gracePeriodSeconds"]; !ok {
 				options["gracePeriodSeconds"] = nil
 			}
@@ -489,6 +497,8 @@ func (su StageUnion) ToSpinnakerStage() (map[string]interface{}, error) {
 		s := structs.New(crdStage.(CheckPreconditions))
 		s.TagName = "json"
 		mapified = s.Map()
+
+		fillSliceIfNeeded(mapified, "preconditions")
 	case "DeployManifest":
 		s := structs.New(crdStage.(DeployManifest))
 		s.TagName = "json"
@@ -573,4 +583,27 @@ func stringToMapInterface(stringToConvert string) (map[string]interface{}, error
 	valuesMap := make(map[string]interface{})
 	err := yaml.Unmarshal([]byte(stringToConvert), valuesMap)
 	return valuesMap, err
+}
+
+func fillSliceIfNeeded(mapified map[string]interface{}, fieldName string) {
+	//Fill if value is nil
+	fillSliceIfNilValue(mapified, fieldName)
+	//Fill if fieldname does not exists
+	fillSliceIfNotExists(mapified, fieldName)
+}
+
+func fillSliceIfNilValue(mapified map[string]interface{}, fieldName string) bool {
+	if mapified[fieldName] == nil {
+		mapified[fieldName] = make([]interface{}, 0)
+		return true
+	}
+	return false
+}
+
+func fillSliceIfNotExists(mapified map[string]interface{}, fieldName string) bool {
+	if _, ok := mapified[fieldName]; !ok {
+		mapified[fieldName] = make([]interface{}, 0)
+		return true
+	}
+	return false
 }

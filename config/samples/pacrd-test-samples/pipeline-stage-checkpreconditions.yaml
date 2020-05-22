@@ -1,0 +1,18 @@
+# file: pipeline.yaml
+apiVersion: pacrd.armory.spinnaker.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: pacrd-checkpreconditions-samples
+spec:
+  description: Check Preconditions example
+  application: &app-name pacrd-pipeline-stages-samples
+  stages:
+    - type: CheckPreconditions
+      name: Check Canary
+      refId: "1"
+      checkPreconditions:
+        preconditions:
+          - type: expression
+            context:
+              expression: "${parameters.canary_deploy} == true"
+            failPipeline: true

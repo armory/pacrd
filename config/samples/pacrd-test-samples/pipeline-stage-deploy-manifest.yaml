@@ -24,7 +24,7 @@ spec:
         account: kubernetes
         cloudProvider: kubernetes
         moniker: 
-          app: superimportantapp
+          app: *app-name
         name: Deploy (Manifest)
         manifestArtifactId: *image-id
         namespaceOverride: jossuegamez

@@ -1,11 +1,3 @@
-apiVersion: pacrd.armory.spinnaker.io/v1alpha1
-kind: Application
-metadata:
-  name: myapplicationpipeline
-spec:
-  email: fernando.freire@armory.io
-  description: We are doing a demo!
----
 # file: pipeline.yaml
 apiVersion: pacrd.armory.spinnaker.io/v1alpha1
 kind: Pipeline
@@ -32,4 +24,3 @@ spec:
         comments: Was the bake successful?
         failPipeline: true
         instructions: Check to see if the helm template was baked correctly
-        notifications: null

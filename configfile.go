@@ -6,6 +6,9 @@ import (
 
 // PacrdConfig represents the valid configuration options for PaCRD
 type PacrdConfig struct {
+	// FiatServiceAccount (optional) the service account to annotate API calls with.
+	FiatServiceAccount string
+	// SpinnakerServices defines the location of Spinnaker services in your environment.
 	SpinnakerServices
 }
 
@@ -28,6 +31,7 @@ func InitConfig() (PacrdConfig, error) {
 		Front50: "http://spin-front50:8080",
 		Orca:    "http://spin-orca:8083",
 	})
+	viper.SetDefault("FiatServiceAccount", "")
 
 	if err := viper.ReadInConfig(); err != nil {
 		// Ignore not found errors; we'll use the defaults in this case.

@@ -72,10 +72,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	// TODO fix this shit
 	spinnakerClient := plank.New()
 	spinnakerClient.URLs["orca"] = pacrdConfig.SpinnakerServices.Orca
 	spinnakerClient.URLs["front50"] = pacrdConfig.SpinnakerServices.Front50
+	// Optionally set the fiat user if it is provided in the config.
+	if pacrdConfig.FiatServiceAccount != "" {
+		spinnakerClient.FiatUser = pacrdConfig.FiatServiceAccount
+	}
 
 	if err = (&controllers.ApplicationReconciler{
 		Client:          mgr.GetClient(),

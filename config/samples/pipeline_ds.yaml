@@ -1,0 +1,81 @@
+apiVersion: pacrd.armory.spinnaker.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: deploy-manifest-test
+spec:
+  description: Foo bar baz
+  application: &app-name deploy-manifest-ds
+  stages:
+    - type: bakeManifest
+      refId: "1"
+      name: Bake Some Bread
+      stage:
+        properties:
+          evaluateOverrideExpressions: false
+          outputName: bread
+          expectedArtifacts: []
+          inputArtifacts: []
+          templateRenderer: HELM2
+          namespace: this2
+          comments: My comment
+    - type: wait
+      refId: "2"
+      requisiteStageRefIds:
+        - "1"
+      name: waiting for the bread
+      stage:
+        properties:
+          waitTime: 304
+    - type: manualJudgment
+      name: Manual Judgment
+      refId: "3"
+      requisiteStageRefIds:
+        - "2"
+      stageEnabled:
+        type: expression
+        expression: "true"
+      stage:
+        properties:
+          failPipeline: true
+          continuePipeline: false
+          completeOtherBranchesThenFail: false
+          instructions: "Do you want to promote canary to Production?"
+          judgmentInputs:
+            - value: No promote
+            - value: Promote
+    - type: webhook
+      name: Please work
+      refId: "4"
+      requisiteStageRefIds:
+        - "3"
+      stage:
+        properties:
+          cancelEndpoint: cancellation url
+          cancelMethod: POST
+          #        cancelPayload: |
+          #          cancelation: payload
+          canceledStatuses: CANCELED, CANCEL
+          customHeaders: |
+            customheader: customvalue
+            customheader2: customalue2
+          method: POST
+          payload: |
+            {
+              "deployment": {
+                "revision": "432423423",
+                "user": "${parameterValues['user']}",
+                "description": "${dasdasd['description']}"
+              }
+            }
+          progressJsonPath: $.buildInfo.status
+          failFastStatusCodes: [ 404, 418 ]
+          retryStatusCodes: [ 404, 418 ]
+          statusJsonPath: $.buildInfo.status
+          statusUrlResolution: webhookResponse
+          statusUrlJsonPath: http://test
+          successStatuses: SUCCESS, OK
+          terminalStatuses: TERMINAL, FINISHED
+          url: webhook url
+          waitBeforeMonitor: "1"
+          waitForCompletion: true
+          comments: This is a test for weekhooks

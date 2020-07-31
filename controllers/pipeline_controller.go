@@ -90,7 +90,7 @@ func (r *PipelineReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 	for _, s := range pipeline.Spec.Stages {
 		if s.Type == "BakeManifest" {
-			for _, ia := range s.BakeManifest.InputArtifacts {
+			for _, ia := range s.GetStage().(pacrdv1alpha1.BakeManifest).InputArtifacts {
 				id, err := pacrdv1alpha1.GetArtifactID(*pipeline.Spec.ExpectedArtifacts, *ia)
 				if err != nil {
 

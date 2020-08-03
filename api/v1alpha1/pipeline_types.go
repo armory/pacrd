@@ -40,7 +40,7 @@ type PipelineSpec struct {
 	// KeepWaitingPipelines TODO
 	KeepWaitingPipelines bool `json:"keepWaitingPipelines,omitempty"`
 	// Stages TODO
-	Stages []StageUnion `json:"stages"`
+	Stages []MatchStage `json:"stages"`
 	// Triggers represent the ways in which
 	// +optional
 	Triggers *[]Trigger `json:"triggers,omitempty"`

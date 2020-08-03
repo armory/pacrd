@@ -12,8 +12,6 @@ github.com/evanphx/json-patch
 github.com/fatih/structs
 # github.com/fsnotify/fsnotify v1.4.7
 github.com/fsnotify/fsnotify
-# github.com/ghodss/yaml v1.0.0
-github.com/ghodss/yaml
 # github.com/go-logr/logr v0.1.0
 github.com/go-logr/logr
 # github.com/go-logr/zapr v0.1.0
@@ -227,6 +225,12 @@ gopkg.in/ini.v1
 gopkg.in/tomb.v1
 # gopkg.in/yaml.v2 v2.2.4
 gopkg.in/yaml.v2
+# gotest.tools v2.2.0+incompatible
+gotest.tools/assert
+gotest.tools/assert/cmp
+gotest.tools/internal/difflib
+gotest.tools/internal/format
+gotest.tools/internal/source
 # k8s.io/api v0.0.0-20190918155943-95b840bb6a1f
 k8s.io/api/admission/v1beta1
 k8s.io/api/admissionregistration/v1

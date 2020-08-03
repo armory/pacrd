@@ -7,17 +7,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-// Stage is a union type that encompasses strongly typed stage definitions.
-type StageUnion struct {
-
-	// Name is the name given to this stage.
-	Type string `json:"type"`
-
-	//BakeManifest renders a Kubernetes manifest to be applied to a target cluster at a later stage. The manifests can be rendered using HELM2 or Kustomize.
-	// +optional
-	Stage MatchStage `json:"stage,omitempty"`
-}
-
 type Stage struct {
 	// Name is the name given to this stage.
 	Name string `json:"name"`
@@ -44,7 +33,7 @@ type Stage struct {
 	SkipWindowText string `json:"skipWindowText,omitempty"`
 }
 
-func (su *StageUnion) GetStage() interface{} {
+func (su *MatchStage) GetStage() interface{} {
 	var s SpinnakerMatchStage
 	switch su.Type {
 	case "bakeManifest":
@@ -69,13 +58,13 @@ func (su *StageUnion) GetStage() interface{} {
 	return s
 }
 
-func (su *StageUnion) MarshallToMap() map[string]interface{} {
+func (su *MatchStage) MarshallToMap() map[string]interface{} {
 	s := structs.New(su)
 	s.TagName = "json"
 	return s.Map()
 }
 
-func (su *StageUnion) NewStageFromBytes(data []byte) error {
+func (su *MatchStage) NewStageFromBytes(data []byte) error {
 	err := json.Unmarshal(data, su)
 
 	if err != nil {
@@ -685,21 +674,13 @@ type MatchStage struct {
 }
 
 // ToSpinnakerStage TODO description
-func (su StageUnion) ToSpinnakerStage() (map[string]interface{}, error) {
+func (su MatchStage) ToSpinnakerStage() (map[string]interface{}, error) {
 
 	s := su.GetStage().(SpinnakerMatchStage)
 
-	err := s.NewStageFromBytes(su.Stage.Properties.Raw)
+	err := s.NewStageFromBytes(su.Properties.Raw)
 
 	stage := s.MarshallToMap()
 	delete(stage, "Stage")
 	return stage, err
-	//for key, element := range properties {
-	//	stage[key] = element
-	//}
-	//
-	//delete(stage, "stage")
-	//delete(stage, "Stage")
-	//
-	//return stage, err
 }

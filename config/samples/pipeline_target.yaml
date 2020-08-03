@@ -1,0 +1,14 @@
+apiVersion: pacrd.armory.spinnaker.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: example-target-pipeline
+spec:
+  description: Foo bar baz
+  application: &app-name deploy-manifest-ds
+  stages:
+    - type: wait
+      properties:
+        refId: "1"
+        name: Waiting
+        comments: this should run from other pipeline
+        waitTime: 30

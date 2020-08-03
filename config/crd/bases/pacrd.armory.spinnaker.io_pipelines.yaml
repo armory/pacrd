@@ -157,24 +157,11 @@ spec:
             stages:
               description: Stages TODO
               items:
-                description: Stage is a union type that encompasses strongly typed
-                  stage definitions.
                 properties:
-                  stage:
-                    description: BakeManifest renders a Kubernetes manifest to be
-                      applied to a target cluster at a later stage. The manifests
-                      can be rendered using HELM2 or Kustomize.
-                    properties:
-                      properties:
-                        type: object
-                      type:
-                        type: string
+                  properties:
                     type: object
                   type:
-                    description: Name is the name given to this stage.
                     type: string
-                required:
-                - type
                 type: object
               type: array
             triggers:

@@ -7,10 +7,10 @@ spec:
   application: &app-name deploy-manifest-ds
   stages:
     - type: bakeManifest
-      refId: "1"
-      name: Bake Some Bread
       stage:
         properties:
+          refId: "1"
+          name: Bake Some Bread
           evaluateOverrideExpressions: false
           outputName: bread
           expectedArtifacts: []
@@ -19,23 +19,23 @@ spec:
           namespace: this2
           comments: My comment
     - type: wait
-      refId: "2"
-      requisiteStageRefIds:
-        - "1"
-      name: waiting for the bread
       stage:
         properties:
+          refId: "2"
+          requisiteStageRefIds:
+            - "1"
+          name: waiting for the bread
           waitTime: 304
     - type: manualJudgment
-      name: Manual Judgment
-      refId: "3"
-      requisiteStageRefIds:
-        - "2"
-      stageEnabled:
-        type: expression
-        expression: "true"
       stage:
         properties:
+          refId: "3"
+          name: bread ready, do you want some?
+          requisiteStageRefIds:
+            - "2"
+          stageEnabled:
+            type: expression
+            expression: "true"
           failPipeline: true
           continuePipeline: false
           completeOtherBranchesThenFail: false
@@ -44,12 +44,12 @@ spec:
             - value: No promote
             - value: Promote
     - type: webhook
-      name: Please work
-      refId: "4"
-      requisiteStageRefIds:
-        - "3"
       stage:
         properties:
+          name: Please work
+          refId: "4"
+          requisiteStageRefIds:
+            - "3"
           cancelEndpoint: cancellation url
           cancelMethod: POST
           #        cancelPayload: |
@@ -64,7 +64,8 @@ spec:
               "deployment": {
                 "revision": "432423423",
                 "user": "${parameterValues['user']}",
-                "description": "${dasdasd['description']}"
+                "description": "${dasdasd['description']}",
+                "update12": "${dasdasd['description']}"
               }
             }
           progressJsonPath: $.buildInfo.status

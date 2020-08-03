@@ -1,4 +1,4 @@
-apiVersion: pacrd.armory.spinnaker.io/v1alpha1
+apiVersion: pacrd.armory.spinnaker.io/v1alpha1/
 kind: Application
 metadata:
   name: deploy-manifest-ds

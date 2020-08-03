@@ -160,67 +160,6 @@ spec:
                 description: Stage is a union type that encompasses strongly typed
                   stage definitions.
                 properties:
-                  comments:
-                    description: Comments provide additional context for this stage
-                      in the Spinnaker UI.
-                    type: string
-                  name:
-                    description: Name is the name given to this stage.
-                    type: string
-                  refId:
-                    description: RefID is the position in the pipeline graph that
-                      this stage should live. Usually monotonically increasing for
-                      a pipeline.
-                    type: string
-                  requisiteStageRefIds:
-                    description: RequisiteStageRefIds is a list of RefIDs that are
-                      required before this stage can run.
-                    items:
-                      type: string
-                    type: array
-                  restrictExecutionDuringTimeWindow:
-                    description: RestrictExecutionDuringTimeWindow provides the ability
-                      to restrict the hours during which this stage can run.
-                    type: boolean
-                  restrictedExecutionWindow:
-                    description: RestrictedExecutionWindow provides the ability to
-                      restrict the hours during which this stage can run.
-                    properties:
-                      days:
-                        items:
-                          type: integer
-                        type: array
-                      jitter:
-                        description: Jitter TODO description
-                        properties:
-                          enabled:
-                            type: boolean
-                          maxDelay:
-                            type: integer
-                          minDelay:
-                            type: integer
-                          skipManual:
-                            type: boolean
-                        type: object
-                      whitelist:
-                        items:
-                          description: WhiteListWindow TODO description
-                          properties:
-                            endHour:
-                              type: integer
-                            endMin:
-                              type: integer
-                            startHour:
-                              type: integer
-                            startMin:
-                              type: integer
-                          type: object
-                        type: array
-                    type: object
-                  skipWindowText:
-                    description: SkipWindowText is the text to display when this stage
-                      is skipped.
-                    type: string
                   stage:
                     description: BakeManifest renders a Kubernetes manifest to be
                       applied to a target cluster at a later stage. The manifests
@@ -231,24 +170,10 @@ spec:
                       type:
                         type: string
                     type: object
-                  stageEnabled:
-                    description: StageEnabled represents whether this stage is active
-                      in a pipeline graph.
-                    properties:
-                      expression:
-                        type: string
-                      type:
-                        type: string
-                    required:
-                    - expression
-                    - type
-                    type: object
                   type:
                     description: Name is the name given to this stage.
                     type: string
                 required:
-                - name
-                - refId
                 - type
                 type: object
               type: array

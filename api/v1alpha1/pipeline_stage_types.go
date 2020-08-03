@@ -13,6 +13,12 @@ type StageUnion struct {
 	// Name is the name given to this stage.
 	Type string `json:"type"`
 
+	//BakeManifest renders a Kubernetes manifest to be applied to a target cluster at a later stage. The manifests can be rendered using HELM2 or Kustomize.
+	// +optional
+	Stage MatchStage `json:"stage,omitempty"`
+}
+
+type Stage struct {
 	// Name is the name given to this stage.
 	Name string `json:"name"`
 	// RefID is the position in the pipeline graph that this stage should live. Usually monotonically increasing for a pipeline.
@@ -36,9 +42,6 @@ type StageUnion struct {
 	// SkipWindowText is the text to display when this stage is skipped.
 	// +optional
 	SkipWindowText string `json:"skipWindowText,omitempty"`
-	//BakeManifest renders a Kubernetes manifest to be applied to a target cluster at a later stage. The manifests can be rendered using HELM2 or Kustomize.
-	// +optional
-	Stage MatchStage `json:"stage,omitempty"`
 }
 
 func (su *StageUnion) GetStage() interface{} {
@@ -115,6 +118,7 @@ type Jitter struct {
 // NOTE: I suspect this only supports `helm2` style deployments right now.
 // NOTE: notifications currently not supported for this stage.
 type BakeManifest struct {
+	Stage `json:",inline"`
 
 	// Name is the name given to this stage.
 	Type string `json:"type"`
@@ -153,7 +157,12 @@ type BakeManifest struct {
 func (bk *BakeManifest) MarshallToMap() map[string]interface{} {
 	s := structs.New(bk)
 	s.TagName = "json"
-	return s.Map()
+	stage := s.Map()
+	m, _ := StructToMap(bk.Stage)
+	for key, element := range m {
+		stage[key] = element
+	}
+	return stage
 }
 
 func (bk *BakeManifest) NewStageFromBytes(data []byte) error {
@@ -171,7 +180,8 @@ func (bk *BakeManifest) NewStageFromBytes(data []byte) error {
 }
 
 type CheckPreconditions struct {
-	Type string `json:"type"`
+	Stage `json:",inline"`
+	Type  string `json:"type"`
 	// +optional
 	Preconditions []*Precondition `json:"preconditions,omitempty"`
 }
@@ -192,7 +202,12 @@ type Context struct {
 func (cp *CheckPreconditions) MarshallToMap() map[string]interface{} {
 	s := structs.New(cp)
 	s.TagName = "json"
-	return s.Map()
+	stage := s.Map()
+	m, _ := StructToMap(cp.Stage)
+	for key, element := range m {
+		stage[key] = element
+	}
+	return stage
 }
 
 func (cp *CheckPreconditions) NewStageFromBytes(data []byte) error {
@@ -206,6 +221,7 @@ func (cp *CheckPreconditions) NewStageFromBytes(data []byte) error {
 }
 
 type DeleteManifest struct {
+	Stage         `json:",inline"`
 	Type          string `json:"type"`
 	Account       string `json:"account"`
 	App           string `json:"app"`
@@ -274,7 +290,12 @@ type Selector struct {
 func (dm *DeleteManifest) MarshallToMap() map[string]interface{} {
 	s := structs.New(dm)
 	s.TagName = "json"
-	return s.Map()
+	stage := s.Map()
+	m, _ := StructToMap(dm.Stage)
+	for key, element := range m {
+		stage[key] = element
+	}
+	return stage
 }
 
 func (dm *DeleteManifest) NewStageFromBytes(data []byte) error {
@@ -289,7 +310,8 @@ func (dm *DeleteManifest) NewStageFromBytes(data []byte) error {
 
 // DeployManifest deploys a Kubernetes manifest to a target Kubernetes cluster. Spinnaker will periodically check the status of the manifest to make sure the manifest converges on the target cluster until it reaches a timeout
 type DeployManifest struct {
-	Type string `json:"type"`
+	Stage `json:",inline"`
+	Type  string `json:"type"`
 	// Account is the configured account to deploy to.
 	Account string `json:"account"`
 	// CloudProvider is the type of cloud provider used by the selected account.
@@ -363,7 +385,12 @@ type Moniker struct {
 func (dm *DeployManifest) MarshallToMap() map[string]interface{} {
 	s := structs.New(dm)
 	s.TagName = "json"
-	return s.Map()
+	stage := s.Map()
+	m, _ := StructToMap(dm.Stage)
+	for key, element := range m {
+		stage[key] = element
+	}
+	return stage
 }
 
 func (dm *DeployManifest) NewStageFromBytes(data []byte) error {
@@ -378,6 +405,7 @@ func (dm *DeployManifest) NewStageFromBytes(data []byte) error {
 
 // FindArtifactsFromResource represents the stage of the same name in Spinnaker.
 type FindArtifactsFromResource struct {
+	Stage         `json:",inline"`
 	Type          string `json:"type"`
 	Account       string `json:"account"`
 	App           string `json:"app,omitempty"`
@@ -390,7 +418,12 @@ type FindArtifactsFromResource struct {
 func (fafr *FindArtifactsFromResource) MarshallToMap() map[string]interface{} {
 	s := structs.New(fafr)
 	s.TagName = "json"
-	return s.Map()
+	stage := s.Map()
+	m, _ := StructToMap(fafr.Stage)
+	for key, element := range m {
+		stage[key] = element
+	}
+	return stage
 }
 
 func (fafr *FindArtifactsFromResource) NewStageFromBytes(data []byte) error {
@@ -409,8 +442,8 @@ func (fafr *FindArtifactsFromResource) NewStageFromBytes(data []byte) error {
 
 // ManualJudgment TODO description
 type ManualJudgment struct {
+	Stage          `json:",inline"`
 	Type           string `json:"type"`
-	Name           string `json:"name,omitempty"`
 	FailPipeline   bool   `json:"failPipeline,omitempty"`
 	Instructions   string `json:"instructions,omitempty"`
 	StageTimeoutMs int    `json:"stageTimeoutMs,omitempty"`
@@ -463,7 +496,12 @@ const (
 func (mj *ManualJudgment) MarshallToMap() map[string]interface{} {
 	s := structs.New(mj)
 	s.TagName = "json"
-	return s.Map()
+	stage := s.Map()
+	m, _ := StructToMap(mj.Stage)
+	for key, element := range m {
+		stage[key] = element
+	}
+	return stage
 }
 
 func (fafr *ManualJudgment) NewStageFromBytes(data []byte) error {
@@ -487,6 +525,7 @@ const (
 
 // UndoRolloutManifest is a stage that rolls back a manifest.
 type UndoRolloutManifest struct {
+	Stage            `json:",inline"`
 	Type             string `json:"type"`
 	Account          string `json:"account"`
 	CloudProvider    string `json:"cloudProvider"`
@@ -503,7 +542,12 @@ type UndoRolloutManifest struct {
 func (urm *UndoRolloutManifest) MarshallToMap() map[string]interface{} {
 	s := structs.New(urm)
 	s.TagName = "json"
-	return s.Map()
+	stage := s.Map()
+	m, _ := StructToMap(urm.Stage)
+	for key, element := range m {
+		stage[key] = element
+	}
+	return stage
 }
 
 func (urm *UndoRolloutManifest) NewStageFromBytes(data []byte) error {
@@ -544,6 +588,7 @@ type StatusUrlResolution string
 // Webhook represents a webhook stage in Spinnaker.
 // NOTE: notifications currently not supported for this stage.
 type Webhook struct {
+	Stage         `json:",inline"`
 	Type          string `json:"type"`
 	Url           string `json:"url,omitempty"`
 	WebhookMethod string `json:"method,omitempty"`
@@ -593,21 +638,25 @@ func (w *Webhook) MarshallToMap() map[string]interface{} {
 	s := structs.New(w)
 	s.TagName = "json"
 
-	mapified := s.Map()
+	stage := s.Map()
+	m, _ := StructToMap(w.Stage)
+	for key, element := range m {
+		stage[key] = element
+	}
 
-	err := rewriteStringValueFromMapToMapInterface("payload", mapified)
+	err := rewriteStringValueFromMapToMapInterface("payload", stage)
 	if err != nil {
-		return mapified
+		return stage
 	}
-	err = rewriteStringValueFromMapToMapInterface("cancelPayload", mapified)
+	err = rewriteStringValueFromMapToMapInterface("cancelPayload", stage)
 	if err != nil {
-		return mapified
+		return stage
 	}
-	err = rewriteStringValueFromMapToMapInterface("customHeaders", mapified)
+	err = rewriteStringValueFromMapToMapInterface("customHeaders", stage)
 	if err != nil {
-		return mapified
+		return stage
 	}
-	return mapified
+	return stage
 
 }
 
@@ -642,13 +691,15 @@ func (su StageUnion) ToSpinnakerStage() (map[string]interface{}, error) {
 
 	err := s.NewStageFromBytes(su.Stage.Properties.Raw)
 
-	stage, _ := StructToMap(su)
-	properties := s.MarshallToMap()
-	for key, element := range properties {
-		stage[key] = element
-	}
-
-	delete(stage, "stage")
-
+	stage := s.MarshallToMap()
+	delete(stage, "Stage")
 	return stage, err
+	//for key, element := range properties {
+	//	stage[key] = element
+	//}
+	//
+	//delete(stage, "stage")
+	//delete(stage, "Stage")
+	//
+	//return stage, err
 }

@@ -1,0 +1,30 @@
+#Unknown
+apiVersion: pacrd.armory.spinnaker.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: pacrd-unknown-samples
+spec:
+  description: Samples for unknown pipelines
+  application: &app-name pacrd-pipeline-stages-samples
+  parameterConfig:
+    - name: example_var
+      default: "false"
+      hasOptions: false
+      label: example_var
+      pinned: false
+      required: true
+  stages:
+    - type: wait
+      properties:
+        refId: "2"
+        name: Wait Stage
+        waitTime: 30
+    - type: pipeline
+      properties:
+        refId: "5"
+        requisiteStageRefIds:
+          - "2"
+        name: Execute second pipeline
+        failPipeline: true
+        pipeline: 9a3fe533-5b0e-4d1e-8ceb-2fe4a9a5e7ab
+        waitForCompletion: true

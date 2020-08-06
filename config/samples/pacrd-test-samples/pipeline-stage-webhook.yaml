@@ -26,7 +26,7 @@ spec:
         method: POST
         payload: |
           {
-            "test": payloadtest,
+            "test": "payloadtest",
             "statuscode": 200
           }
         progressJsonPath: $.buildInfo.status

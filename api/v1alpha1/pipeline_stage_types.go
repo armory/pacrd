@@ -172,17 +172,17 @@ func (bk *BakeManifest) MarshallToMap() map[string]interface{} {
 func (bk *BakeManifest) NewStageFromBytes(data []byte) error {
 	err := json.Unmarshal(data, bk)
 
+	if err != nil {
+		log.WithName("BakeManifest").Error(err, "error while reading BakeManifest")
+		return err
+	}
+
 	if len(bk.InputArtifacts) == 0 {
 		bk.InputArtifacts = []*ArtifactReference{}
 	}
 
 	if len(bk.Overrides) == 0 {
 		bk.Overrides = make(map[string]string)
-	}
-
-	if err != nil {
-		log.WithName("BakeManifest").Error(err, "error while reading BakeManifest")
-		return err
 	}
 
 	return nil
@@ -221,13 +221,13 @@ func (cp *CheckPreconditions) MarshallToMap() map[string]interface{} {
 func (cp *CheckPreconditions) NewStageFromBytes(data []byte) error {
 	err := json.Unmarshal(data, cp)
 
-	if len(cp.Preconditions) == 0 {
-		cp.Preconditions = []*Precondition{}
-	}
-
 	if err != nil {
 		log.WithName("CheckPreconditions").Error(err, "error while reading CheckPreconditions")
 		return err
+	}
+
+	if len(cp.Preconditions) == 0 {
+		cp.Preconditions = []*Precondition{}
 	}
 
 	return nil
@@ -490,9 +490,9 @@ type ManualJudgment struct {
 	//+optional
 	SendNotifications bool `json:"sendNotifications,omitempty"`
 	//+optional
-	Notifications []*ManualJudgmentNotification `json:"notifications"`
+	Notifications []*ManualJudgmentNotification `json:"notifications,omitempty"`
 	//+optional
-	JudgmentInputs []JudgmentInput `json:"judgmentInputs"`
+	JudgmentInputs []JudgmentInput `json:"judgmentInputs,omitempty"`
 }
 
 // JudgmentInput TODO description
@@ -543,12 +543,20 @@ func (mj *ManualJudgment) MarshallToMap() map[string]interface{} {
 	return stage
 }
 
-func (fafr *ManualJudgment) NewStageFromBytes(data []byte) error {
-	err := json.Unmarshal(data, fafr)
+func (mj *ManualJudgment) NewStageFromBytes(data []byte) error {
+	err := json.Unmarshal(data, mj)
 
 	if err != nil {
 		log.WithName("ManualJudgment").Error(err, "error while reading ManualJudgment")
 		return err
+	}
+
+	if len(mj.Notifications) == 0 {
+		mj.Notifications = []*ManualJudgmentNotification{}
+	}
+
+	if len(mj.JudgmentInputs) == 0 {
+		mj.JudgmentInputs = []JudgmentInput{}
 	}
 
 	return nil
@@ -629,6 +637,11 @@ func (us *UnknownStage) NewStageFromBytes(data []byte) error {
 	m := make(map[string]interface{})
 
 	err := json.Unmarshal(data, &m)
+	if err != nil {
+		log.WithName("UnknownStage").Error(err, "error while reading Stage")
+		return err
+	}
+
 	us.Properties = m
 
 	return err

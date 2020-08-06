@@ -2,11 +2,13 @@ package v1alpha1
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/fatih/structs"
 	"github.com/ghodss/yaml"
 	"k8s.io/apimachinery/pkg/runtime"
+	ctrl "sigs.k8s.io/controller-runtime"
 )
+
+var log = ctrl.Log.WithName("stages")
 
 type Stage struct {
 	// Name is the name given to this stage.
@@ -81,6 +83,7 @@ func (su *MatchStage) NewStageFromBytes(data []byte) error {
 	err := json.Unmarshal(data, su)
 
 	if err != nil {
+		log.WithName("MatchStage").Error(err, "error while reading MatchStage")
 		return err
 	}
 
@@ -178,6 +181,7 @@ func (bk *BakeManifest) NewStageFromBytes(data []byte) error {
 	}
 
 	if err != nil {
+		log.WithName("BakeManifest").Error(err, "error while reading BakeManifest")
 		return err
 	}
 
@@ -222,6 +226,7 @@ func (cp *CheckPreconditions) NewStageFromBytes(data []byte) error {
 	}
 
 	if err != nil {
+		log.WithName("CheckPreconditions").Error(err, "error while reading CheckPreconditions")
 		return err
 	}
 
@@ -308,6 +313,7 @@ func (dm *DeleteManifest) MarshallToMap() map[string]interface{} {
 		manifestName, err := GenerateManifestName(stage)
 
 		if err != nil {
+			log.WithName("DeleteManifest").Error(err, "error while trying to generate manifestName")
 			return stage
 		}
 
@@ -321,6 +327,7 @@ func (dm *DeleteManifest) NewStageFromBytes(data []byte) error {
 	err := json.Unmarshal(data, dm)
 
 	if err != nil {
+		log.WithName("DeleteManifest").Error(err, "error while reading DeleteManifest")
 		return err
 	}
 
@@ -418,6 +425,7 @@ func (dm *DeployManifest) MarshallToMap() map[string]interface{} {
 				manifest := make(map[string]interface{})
 				err := yaml.Unmarshal([]byte(stringManifest), &manifest)
 				if err != nil {
+					log.WithName("DeployManifest").Error(err, "error while trying to read manifest content")
 					return stage
 				}
 				finalManifests = append(finalManifests, manifest)
@@ -432,6 +440,7 @@ func (dm *DeployManifest) NewStageFromBytes(data []byte) error {
 	err := json.Unmarshal(data, dm)
 
 	if err != nil {
+		log.WithName("DeployManifest").Error(err, "error while reading DeployManifest")
 		return err
 	}
 
@@ -464,11 +473,8 @@ func (fafr *FindArtifactsFromResource) NewStageFromBytes(data []byte) error {
 	err := json.Unmarshal(data, fafr)
 
 	if err != nil {
+		log.WithName("FindArtifactsFromResource").Error(err, "error while reading FindArtifactsFromResource")
 		return err
-	}
-
-	if fafr.Account == "" {
-		return fmt.Errorf("account must be defined for this stage")
 	}
 
 	return nil
@@ -541,6 +547,7 @@ func (fafr *ManualJudgment) NewStageFromBytes(data []byte) error {
 	err := json.Unmarshal(data, fafr)
 
 	if err != nil {
+		log.WithName("ManualJudgment").Error(err, "error while reading ManualJudgment")
 		return err
 	}
 
@@ -585,6 +592,7 @@ func (urm *UndoRolloutManifest) MarshallToMap() map[string]interface{} {
 		manifestName, err := GenerateManifestName(stage)
 
 		if err != nil {
+			log.WithName("UndoRolloutManifest").Error(err, "error while trying to generate manifestName")
 			return stage
 		}
 
@@ -598,6 +606,7 @@ func (urm *UndoRolloutManifest) NewStageFromBytes(data []byte) error {
 	err := json.Unmarshal(data, urm)
 
 	if err != nil {
+		log.WithName("UndoRolloutManifest").Error(err, "error while reading UndoRolloutManifest")
 		return err
 	}
 
@@ -689,15 +698,15 @@ func (w *Webhook) MarshallToMap() map[string]interface{} {
 
 	err := rewriteStringValueFromMapToMapInterface("payload", stage)
 	if err != nil {
-		return stage
+		log.WithName("Webhook").Error(err, "error while reading payload")
 	}
 	err = rewriteStringValueFromMapToMapInterface("cancelPayload", stage)
 	if err != nil {
-		return stage
+		log.WithName("Webhook").Error(err, "error while reading cancelPayload")
 	}
 	err = rewriteStringValueFromMapToMapInterface("customHeaders", stage)
 	if err != nil {
-		return stage
+		log.WithName("Webhook").Error(err, "error while reading customHeaders")
 	}
 	return stage
 
@@ -707,6 +716,7 @@ func (w *Webhook) NewStageFromBytes(data []byte) error {
 	err := json.Unmarshal(data, w)
 
 	if err != nil {
+		log.WithName("Webhook").Error(err, "error while reading Webhook")
 		return err
 	}
 

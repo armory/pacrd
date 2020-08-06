@@ -36,7 +36,7 @@ type Stage struct {
 	SkipWindowText string `json:"skipWindowText,omitempty"`
 }
 
-func (s *Stage) Marshal() map[string]interface{} {
+func (s *Stage) MarshallToMap() map[string]interface{} {
 
 	if len(s.RequisiteStageRefIds) == 0 {
 		s.RequisiteStageRefIds = []string{}
@@ -163,7 +163,7 @@ func (bk *BakeManifest) MarshallToMap() map[string]interface{} {
 	s := structs.New(bk)
 	s.TagName = "json"
 	stage := s.Map()
-	for key, element := range bk.Stage.Marshal() {
+	for key, element := range bk.Stage.MarshallToMap() {
 		stage[key] = element
 	}
 	return stage
@@ -212,7 +212,7 @@ func (cp *CheckPreconditions) MarshallToMap() map[string]interface{} {
 	s := structs.New(cp)
 	s.TagName = "json"
 	stage := s.Map()
-	for key, element := range cp.Stage.Marshal() {
+	for key, element := range cp.Stage.MarshallToMap() {
 		stage[key] = element
 	}
 	return stage
@@ -304,7 +304,7 @@ func (dm *DeleteManifest) MarshallToMap() map[string]interface{} {
 	s := structs.New(dm)
 	s.TagName = "json"
 	stage := s.Map()
-	for key, element := range dm.Stage.Marshal() {
+	for key, element := range dm.Stage.MarshallToMap() {
 		stage[key] = element
 	}
 
@@ -412,7 +412,7 @@ func (dm *DeployManifest) MarshallToMap() map[string]interface{} {
 	s := structs.New(dm)
 	s.TagName = "json"
 	stage := s.Map()
-	for key, element := range dm.Stage.Marshal() {
+	for key, element := range dm.Stage.MarshallToMap() {
 		stage[key] = element
 	}
 
@@ -463,7 +463,7 @@ func (fafr *FindArtifactsFromResource) MarshallToMap() map[string]interface{} {
 	s := structs.New(fafr)
 	s.TagName = "json"
 	stage := s.Map()
-	for key, element := range fafr.Stage.Marshal() {
+	for key, element := range fafr.Stage.MarshallToMap() {
 		stage[key] = element
 	}
 	return stage
@@ -537,7 +537,7 @@ func (mj *ManualJudgment) MarshallToMap() map[string]interface{} {
 	s := structs.New(mj)
 	s.TagName = "json"
 	stage := s.Map()
-	for key, element := range mj.Stage.Marshal() {
+	for key, element := range mj.Stage.MarshallToMap() {
 		stage[key] = element
 	}
 	return stage
@@ -583,7 +583,7 @@ func (urm *UndoRolloutManifest) MarshallToMap() map[string]interface{} {
 	s := structs.New(urm)
 	s.TagName = "json"
 	stage := s.Map()
-	for key, element := range urm.Stage.Marshal() {
+	for key, element := range urm.Stage.MarshallToMap() {
 		stage[key] = element
 	}
 
@@ -692,7 +692,7 @@ func (w *Webhook) MarshallToMap() map[string]interface{} {
 	s.TagName = "json"
 
 	stage := s.Map()
-	for key, element := range w.Stage.Marshal() {
+	for key, element := range w.Stage.MarshallToMap() {
 		stage[key] = element
 	}
 

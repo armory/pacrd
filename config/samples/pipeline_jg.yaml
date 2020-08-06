@@ -14,10 +14,10 @@ spec:
   description: Foo bar baz
   application: &app-name deploy-manifest-test-jossue
   stages:
-    - type: DeployManifest
-      name: Deploy Sample Pods
-      refId: "1"
-      deployManifest:
+    - type: deployManifest
+      properties:
+        name: Deploy Sample Pods
+        refId: "1"
         source: text
         account: kubernetes
         cloudProvider: kubernetes
@@ -36,29 +36,35 @@ spec:
                   image: nginx:1.17
         moniker:
           app: *app-name
-    - type: ManualJudgment
-      name: Did it work?
-      refId: "2"
-      requisiteStageRefIds: [ "1" ]
-      manualJudgment:
+    - type: manualJudgment
+      properties:
+        name: Did it work?
+        refId: "2"
+        requisiteStageRefIds: [ "1" ]
         failPipeline: true
-    - type: Webhook
-      name: Please work
-      refId: "3"
-      requisiteStageRefIds: [ "2" ]
-      webhook:
+    - type: webhook
+      properties:
+        name: Please work
+        refId: "3"
+        requisiteStageRefIds: [ "2" ]
         cancelEndpoint: cancellation url
         cancelMethod: POST
         cancelPayload: |
-          cancelation: payload
+          {
+            "cancelation": "payload"
+          }
         canceledStatuses: CANCELED, CANCEL
         customHeaders: |
-          customheader: customvalue
-          customheader2: customalue2
+          {
+            "customheader": "customvalue",
+            "customheader2": "customalue2"
+          }
         method: POST
         payload: |
-          test: payloadtest
-          statuscode: 200
+          {
+            "test": payloadtest,
+            "statuscode": 200
+          }
         progressJsonPath: $.buildInfo.status
         failFastStatusCodes: [ 404, 418 ]
         retryStatusCodes: [ 404, 418 ]

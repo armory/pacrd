@@ -14,10 +14,10 @@ spec:
   description: Foo bar baz
   application: &app-name deploy-manifest-test
   stages:
-    - type: DeployManifest
-      name: Deploy Sample Pods
-      refId: "1"
-      deployManifest:
+    - type: deployManifest
+      properties:
+        name: Deploy Sample Pods
+        refId: "1"
         source: text
         account: kubernetes
         cloudProvider: kubernetes
@@ -36,9 +36,9 @@ spec:
                   image: nginx:1.17
         moniker:
           app: *app-name
-    - type: ManualJudgment
-      name: Did it work?
-      refId: "2"
-      requisiteStageRefIds: [ "1" ]
-      manualJudgment:
+    - type: manualJudgment
+      properties:
+        name: Did it work?
+        refId: "2"
+        requisiteStageRefIds: [ "1" ]
         failPipeline: true

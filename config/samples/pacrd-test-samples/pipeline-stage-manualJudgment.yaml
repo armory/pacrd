@@ -7,9 +7,9 @@ spec:
   description: Manual Judgment pipeline sample
   application: &app-name pacrd-pipeline-stages-samples
   stages:
-    - type: ManualJudgment
-      name: Manual example
-      refId: "1"
-      manualJudgment:
+    - type: manualJudgment
+      properties:
+        name: Manual example
+        refId: "1"
         failPipeline: true
         instructions: Check if this stage works

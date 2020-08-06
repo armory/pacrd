@@ -8,12 +8,13 @@ spec:
   application: dne
   stages:
     - type: bakeManifest
-      name: Bake Some Bread
-      evaluateOverrideExpressions: false
-      outputName: bread
-      expectedArtifacts: []
-      inputArtifacts: []
-      templateRenderer: helm2
+      properties:
+        name: Bake Some Bread
+        evaluateOverrideExpressions: false
+        outputName: bread
+        expectedArtifacts: []
+        inputArtifacts: []
+        templateRenderer: helm2
     #- type: FindArtifactFromResource
       #name: Find the Bread
       #account: "hlp-eks-spe-navnonprod-pdx"

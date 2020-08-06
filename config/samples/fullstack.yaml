@@ -53,11 +53,11 @@ spec:
       useDefaultArtifact: true
       usePriorArtifact: false
   stages:
-    - type: BakeManifest
-      refId: "1"
-      # requisiteStageRefIds: [ "16" ]
-      name: Bake Simple Deploy
-      bakeManifest:
+    - type: bakeManifest
+      properties:
+        refId: "1"
+        # requisiteStageRefIds: [ "16" ]
+        name: Bake Simple Deploy
         namespace: ffreire
         evaluateOverrideExpressions: false
         outputName: bread
@@ -69,9 +69,6 @@ spec:
               #kind: base64
               #name: core-entitlements
               #type: embedded/base64
-        inputArtifacts:
-          - account: kubernetes
-            id: nonsensical
         templateRenderer: helm2
         failPipeline: false
         continuePipeline: false
@@ -81,28 +78,28 @@ spec:
         inputArtifacts:
           - account: "kubernetes"
             id: "669017b9-0a53-49c2-8b69-25c957e2d1ef"
-    - type: FindArtifactsFromResource
-      refId: "3"
-      requisiteStageRefIds: [ "6" ]
-      name: Find Baseline
-      stageEnabled:
-        expression: "${parameters.canary_deploy} == true"
-        type: expression
-      findArtifactsFromResource:
+    - type: findArtifactsFromResource
+      properties:
+        refId: "3"
+        requisiteStageRefIds: [ "6" ]
+        name: Find Baseline
+        stageEnabled:
+          expression: "${parameters.canary_deploy} == true"
+          type: expression
         account: "hlp-eks-spe-${parameters.env}-navnonprod-pdx"
         app: &app-name
         cloudProvider: kubernetes
         location: entitlements
         manifestName: deployment eks-spe-${parameters.env}-entitelements-core-entitelements
         mode: static
-    - type: DeleteManifest
-      name: Delete Baseline
-      refId: "5"
-      # requisiteStageRefIds: [ "9" ]
-      stageEnabled:
-        expression: "${parameters.canary_deploy} == true"
-        type: expression
-      deleteManifest:
+    - type: deleteManifest
+      properties:
+        name: Delete Baseline
+        refId: "5"
+        # requisiteStageRefIds: [ "9" ]
+        stageEnabled:
+          expression: "${parameters.canary_deploy} == true"
+          type: expression
         account: "help-eks-spe-${parameters.env}-navnonprod-pdx"
         app: &app-name
         cloudProvider: kubernetes
@@ -111,23 +108,23 @@ spec:
         mode: static
         options:
           cascading: true
-    - type: CheckPreconditions
-      name: Check Canary
-      refId: "6"
-      checkPreconditions:
+    - type: checkPreconditions
+      properties:
+        name: Check Canary
+        refId: "6"
         preconditions:
           - type: expression
             context:
               expression: "${parameters.canary_deploy} == true"
             failPipeline: true
-    - type: BakeManifest
-      name: Bake Canary
-      refId: "7"
-      requisiteStageRefIds: [ "6" ]
-      stageEnabled:
-        type: expression
-        expression: "${parameters.canary_deploy} == true"
-      bakeManifest:
+    - type: bakeManifest
+      properties:
+        name: Bake Canary
+        refId: "7"
+        requisiteStageRefIds: [ "6" ]
+        stageEnabled:
+          type: expression
+          expression: "${parameters.canary_deploy} == true"
         templateRenderer: helm2
         namespace: entitelements
         outputName: core-entitlements
@@ -147,14 +144,14 @@ spec:
               #name: core-entitlements
               #type: embedded/base64
             useDefaultArtifact: false
-    - type: DeployManifest
-      name: Deploy Canary
-      refId: "8"
-      requisiteStageRefIds: [ "7" ]
-      stageEnabled:
-        type: expression
-        expression: "${parameters.canary_deploy} == true"
-      deployManifest:
+    - type: deployManifest
+      properties:
+        name: Deploy Canary
+        refId: "8"
+        requisiteStageRefIds: [ "7" ]
+        stageEnabled:
+          type: expression
+          expression: "${parameters.canary_deploy} == true"
         account: "hlp-eks-spe-${parameters.env}-navnonprod-pdx"
         cloudProvider: kubernetes
         completeOtherBranchesThenFail: false
@@ -174,14 +171,14 @@ spec:
           app: core-entitelements
         skipExpressionEvaluation: true
         source: artifact
-    - type: ManualJudgment
-      name: Manual Judgment
-      refId: "9"
-      requisiteStageRefIds: [ "8" ]
-      stageEnabled:
-        type: expression
-        expression: "${parameters.canary_deploy} == true"
-      manualJudgment:
+    - type: manualJudgment
+      properties:
+        name: Manual Judgment
+        refId: "9"
+        requisiteStageRefIds: [ "8" ]
+        stageEnabled:
+          type: expression
+          expression: "${parameters.canary_deploy} == true"
         failPipeline: true
         continuePipeline: false
         completeOtherBranchesThenFail: false

@@ -31,15 +31,15 @@ spec:
         properties:
           name: foobar
   stages:
-    - type: ManualJudgment
-      name: Should We Start this Deployment?
-      refId: "1"
-      manualJudgment: {}
-    - type: BakeManifest
-      name: Let's Bake Some Manifests
-      refId: "2"
-      requisiteStageRefIds: [ "1" ]
-      bakeManifest:
+    - type: manualJudgment
+      properties:
+        name: Should We Start this Deployment?
+        refId: "1"
+    - type: bakeManifest
+      properties:
+        name: Let's Bake Some Manifests
+        refId: "2"
+        requisiteStageRefIds: [ "1" ]
         templateRenderer: helm2
         outputName: myManifest
         inputArtifacts:

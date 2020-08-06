@@ -7,10 +7,10 @@ spec:
   description: Check Preconditions example
   application: &app-name pacrd-pipeline-stages-samples
   stages:
-    - type: CheckPreconditions
-      name: Check Canary
-      refId: "1"
-      checkPreconditions:
+    - type: checkPreconditions
+      properties:
+        name: Check Canary
+        refId: "1"
         preconditions:
           - type: expression
             context:

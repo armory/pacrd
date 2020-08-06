@@ -15,10 +15,10 @@ spec:
   description: Samples for DeleteManifest
   application: pacrd-pipeline-stages-samples
   stages:
-    - type: DeleteManifest
-      name: Static target
-      refId: "1"
-      deleteManifest:
+    - type: deleteManifest
+      properties:
+        name: Static target
+        refId: "1"
         account: text
         app: kubernetes
         cloudProvider: kubernetes
@@ -40,9 +40,9 @@ spec:
   application: pacrd-pipeline-stages-samples
   stages:
     - type: Webhook
-      name: Please work
-      refId: "1"
-      webhook:
+      properties:
+        name: Please work
+        refId: "1"
         cancelEndpoint: cancellation url
         cancelMethod: POST
 #        cancelPayload: |

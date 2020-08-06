@@ -17,15 +17,14 @@ spec:
         <<: *manifest-repo-artifact
       useDefaultArtifact: true
   stages:
-    - type: DeployManifest
-      name: Deploy manifest example
-      refId: "1"
-      deployManifest:
+    - type: deployManifest
+      properties:
+        name: Deploy manifest example
+        refId: "1"
         account: kubernetes
         cloudProvider: kubernetes
         moniker: 
           app: *app-name
-        name: Deploy (Manifest)
         manifestArtifactId: *image-id
         namespaceOverride: jossuegamez
         requiredArtifactIds: [ "my-artifact" ]

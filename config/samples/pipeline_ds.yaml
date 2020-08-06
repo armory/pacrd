@@ -55,12 +55,16 @@ spec:
           - "3"
         cancelEndpoint: cancellation url
         cancelMethod: POST
-        #        cancelPayload: |
-        #          cancelation: payload
+        cancelPayload: |
+          {
+            "cancelContent": "My Cancel Content"
+          }
         canceledStatuses: CANCELED, CANCEL
         customHeaders: |
-          customheader: customvalue
-          customheader2: customalue2
+          {
+            "customheader": "customvalue",
+            "customheader2": "customalue2"
+          }
         method: POST
         payload: |
           {
@@ -82,9 +86,6 @@ spec:
         waitBeforeMonitor: "1"
         waitForCompletion: true
         comments: This is a test for weekhooks
-        stageEnabled:
-          type: expression
-          expression: "true == false"
     - type: pipeline
       properties:
         refId: "5"

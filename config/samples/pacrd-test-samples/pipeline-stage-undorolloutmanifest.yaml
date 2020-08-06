@@ -7,17 +7,17 @@ spec:
   description: Samples for undorollout
   application: &app-name pacrd-pipeline-stages-samples
   stages:
-    - type: ManualJudgment
-      name: Should we start?
-      refId: "1"
-      manualJudgment:
+    - type: manualJudgment
+      properties:
+        name: Should we start?
+        refId: "1"
         failPipeline: true
         instructions: Check if this stage works
-    - type: UndoRolloutManifest
-      name: Static target
-      refId: "2"
-      requisiteStageRefIds: [ "1" ]
-      undoRolloutManifest:
+    - type: undoRolloutManifest
+      properties:
+        name: Static target
+        refId: "2"
+        requisiteStageRefIds: [ "1" ]
         account: kubernetes
         app: *app-name
         cloudProvider: kubernetes

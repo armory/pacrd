@@ -14,19 +14,6 @@ func GenerateManifestName(m map[string]interface{}) (string, error) {
 	return "", fmt.Errorf("could not construct manifestName, kind or targetName was empty")
 }
 
-func StructToMap(data interface{}) (map[string]interface{}, error) {
-	dataBytes, err := json.Marshal(data)
-	if err != nil {
-		return nil, err
-	}
-	mapData := make(map[string]interface{})
-	err = json.Unmarshal(dataBytes, &mapData)
-	if err != nil {
-		return nil, err
-	}
-	return mapData, nil
-}
-
 func stringToMapInterface(stringToConvert string) (map[string]interface{}, error) {
 	valuesMap := make(map[string]interface{})
 	err := json.Unmarshal([]byte(stringToConvert), &valuesMap)

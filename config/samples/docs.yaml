@@ -10,17 +10,17 @@ spec:
     # Note: In `v0.1.x` you are required to specify _both_ `type: BakeManifest`
     #       as well as place options under a `bakeManifest` key. Consult the
     #       "Known Limitations" section below for more information.
-    - type: BakeManifest
-      name: Bake Application
-      refId: "1"
-      bakeManifest:
+    - type: bakeManifest
+      properties:
+        name: Bake Application
+        refId: "1"
         evaluateOverrideExpressions: false
         outputName: myapplicationname
         templateRenderer: helm2
-    - type: ManualJudgment
-      name: Bake Successful?
-      refId: "2"
-      manualJudgment:
+    - type: manualJudgment
+      properties:
+        name: Bake Successful?
+        refId: "2"
         comments: Was the bake successful?
         failPipeline: true
         instructions: Check to see if the helm template was baked correctly

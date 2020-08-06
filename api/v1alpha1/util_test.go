@@ -1,6 +1,8 @@
 package v1alpha1
 
 import (
+	"encoding/json"
+	"k8s.io/apimachinery/pkg/runtime"
 	"testing"
 
 	"github.com/leanovate/gopter"
@@ -35,4 +37,9 @@ func TestGenerateManifestNameError(t *testing.T) {
 	if err == nil {
 		t.Fatalf("GenerateManifestName should have errored")
 	}
+}
+
+func CreateRawExtension(obj interface{}) runtime.RawExtension {
+	b, _ := json.Marshal(obj)
+	return runtime.RawExtension{Raw: b}
 }

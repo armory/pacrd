@@ -7,22 +7,28 @@ spec:
   description: Samples for Webhooks
   application: pacrd-pipeline-stages-samples
   stages:
-    - type: Webhook
-      name: Waiting for completion from webhook repsonse
-      refId: "1"
-      webhook:
+    - type: webhook
+      properties:
+        name: Waiting for completion from webhook repsonse
+        refId: "1"
         cancelEndpoint: cancellation url
         cancelMethod: POST
         cancelPayload: |
-          cancelation: payload
+          {
+            "cancelation": "payload"
+          }
         canceledStatuses: CANCELED, CANCEL
         customHeaders: |
-          customheader: customvalue
-          customheader2: customalue2
+          {
+            "customheader": "customvalue",
+            "customheader2": "customalue2"
+          }
         method: POST
         payload: |
-          test: payloadtest
-          statuscode: 200
+          {
+            "test": payloadtest,
+            "statuscode": 200
+          }
         progressJsonPath: $.buildInfo.status
         failFastStatusCodes: [ 404, 418 ]
         retryStatusCodes: [ 404, 418 ]

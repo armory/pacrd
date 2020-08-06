@@ -14,15 +14,15 @@ spec:
     # Note: In `v0.1.0` you are required to sepcify _both_ `type: BakeManifest`
     #       as well as place options under a `bakeManifest` key. Consult the
     #       "Current Limitations" section above for more information.
-    - type: BakeManifest
-      bakeManifest:
+    - type: bakeManifest
+      properties:
         name: Bake Application
         evaluateOverrideExpressions: false
         outputName: myapplicationname
         templateRenderer: helm2
         refId: "1"
-    - type: ManualJudgment
-      manualJudgment:
+    - type: manualJudgment
+      properties:
         name: Bake Successful?
         comments: Was the bake successful?
         failPipeline: true

@@ -7,10 +7,10 @@ spec:
   description: Samples for DeleteManifest
   application: &app-name pacrd-pipeline-stages-samples
   stages:
-    - type: DeleteManifest
-      name: Static target
-      refId: "1"
-      deleteManifest:
+    - type: deleteManifest
+      properties:
+        name: Static target
+        refId: "1"
         account: text
         app: *app-name
         cloudProvider: kubernetes
@@ -21,11 +21,11 @@ spec:
         options:
           cascading: true
           gracePeriodSeconds: 60
-    - type: DeleteManifest
-      name: Dynamic target
-      refId: "2"
-      requisiteStageRefIds: [ "1" ]
-      deleteManifest:
+    - type: deleteManifest
+      properties:
+        name: Dynamic target
+        refId: "2"
+        requisiteStageRefIds: [ "1" ]
         account: kubernetes
         app: *app-name
         cloudProvider: kubernetes
@@ -37,11 +37,11 @@ spec:
         options:
           cascading: true
           gracePeriodSeconds: 60
-    - type: DeleteManifest
-      name: Match by labels
-      refId: "3"
-      requisiteStageRefIds: [ "2" ]
-      deleteManifest:
+    - type: deleteManifest
+      properties:
+        name: Match by labels
+        refId: "3"
+        requisiteStageRefIds: [ "2" ]
         account: kubernetes
         app: *app-name
         cloudProvider: kubernetes

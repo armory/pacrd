@@ -10,10 +10,10 @@ spec:
     # Note: In `v0.1.x` you are required to specify _both_ `type: BakeManifest`
     #       as well as place options under a `bakeManifest` key. Consult the
     #       "Known Limitations" section below for more information.
-    - type: BakeManifest
-      name: Bake Application
-      refId: "1"
-      bakeManifest:
+    - type: bakeManifest
+      properties:
+        name: Bake Application
+        refId: "1"
 #        evaluateOverrideExpressions: false
         outputName: *app-name
 #        templateRenderer: helm2

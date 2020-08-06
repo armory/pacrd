@@ -7,10 +7,10 @@ spec:
   description: Find Artifacts From Resource pipeline sample
   application: &app-name pacrd-pipeline-stages-samples
   stages:
-    - type: FindArtifactsFromResource
-      refId: "1"
-      name: Find Baseline
-      findArtifactsFromResource:
+    - type: findArtifactsFromResource
+      properties:
+        refId: "1"
+        name: Find Baseline
         account: jossuegamez
         app: *app-name
         cloudProvider: kubernetes

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/fatih/structs"
+	"github.com/ghodss/yaml"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -14,7 +15,7 @@ type Stage struct {
 	RefID string `json:"refId"`
 	// RequisiteStageRefIds is a list of RefIDs that are required before this stage can run.
 	// +optional
-	RequisiteStageRefIds []string `json:"requisiteStageRefIds,omitempty"`
+	RequisiteStageRefIds []string `json:"requisiteStageRefIds"`
 	// StageEnabled represents whether this stage is active in a pipeline graph.
 	// +optional
 	StageEnabled *StageEnabled `json:"stageEnabled,omitempty"`
@@ -127,14 +128,14 @@ type BakeManifest struct {
 	// +optional
 	ExpectedArtifacts []Artifact `json:"expectedArtifacts,omitempty"`
 	// +optional
-	InputArtifacts []*ArtifactReference `json:"inputArtifacts,omitempty"`
+	InputArtifacts []*ArtifactReference `json:"inputArtifacts"`
 	// InputArtifact is used by the Kustomize variant of BakeManifest to pull in a single artifact.
 	// +optional
-	InputArtifact ArtifactReference `json:"inputArtifact,omitempty"`
+	InputArtifact ArtifactReference `json:"inputArtifact"`
 	// +optional
 	OutputName string `json:"outputName,omitempty"`
 	// +optional
-	Overrides map[string]string `json:"overrides,omitempty"`
+	Overrides map[string]string `json:"overrides"`
 	// +optional
 	RawOverrides     bool   `json:"rawOverrides,omitempty"`
 	TemplateRenderer string `json:"templateRenderer,omitempty"`
@@ -147,8 +148,9 @@ func (bk *BakeManifest) MarshallToMap() map[string]interface{} {
 	s := structs.New(bk)
 	s.TagName = "json"
 	stage := s.Map()
-	m, _ := StructToMap(bk.Stage)
-	for key, element := range m {
+	m := structs.New(bk.Stage)
+	m.TagName = "json"
+	for key, element := range m.Map() {
 		stage[key] = element
 	}
 	return stage
@@ -172,7 +174,7 @@ type CheckPreconditions struct {
 	Stage `json:",inline"`
 	Type  string `json:"type"`
 	// +optional
-	Preconditions []*Precondition `json:"preconditions,omitempty"`
+	Preconditions []*Precondition `json:"preconditions"`
 }
 
 // Precondition TODO likely needs to be refined to support more than expressions
@@ -192,8 +194,9 @@ func (cp *CheckPreconditions) MarshallToMap() map[string]interface{} {
 	s := structs.New(cp)
 	s.TagName = "json"
 	stage := s.Map()
-	m, _ := StructToMap(cp.Stage)
-	for key, element := range m {
+	m := structs.New(cp.Stage)
+	m.TagName = "json"
+	for key, element := range m.Map() {
 		stage[key] = element
 	}
 	return stage
@@ -263,7 +266,7 @@ type Options struct {
 	// +optional
 	Cascading bool `json:"cascading"`
 	// +optional
-	GracePeriodSeconds int `json:"gracePeriodSeconds,omitempty"`
+	GracePeriodSeconds *int `json:"gracePeriodSeconds"`
 }
 
 //This value comes from: /clouddriver/clouddriver-kubernetes-v2/src/main/java/com/netflix/spinnaker/clouddriver/kubernetes/v2/security/KubernetesSelector.java
@@ -280,10 +283,23 @@ func (dm *DeleteManifest) MarshallToMap() map[string]interface{} {
 	s := structs.New(dm)
 	s.TagName = "json"
 	stage := s.Map()
-	m, _ := StructToMap(dm.Stage)
-	for key, element := range m {
+	m := structs.New(dm.Stage)
+	m.TagName = "json"
+	for key, element := range m.Map() {
 		stage[key] = element
 	}
+
+	//When we have static target the manifestname is the union of kind and targetName
+	if modevalue, ok := stage["mode"]; ok && modevalue == ChooseStaticTarget {
+		manifestName, err := GenerateManifestName(stage)
+
+		if err != nil {
+			return stage
+		}
+
+		stage["manifestName"] = manifestName
+	}
+
 	return stage
 }
 
@@ -375,9 +391,27 @@ func (dm *DeployManifest) MarshallToMap() map[string]interface{} {
 	s := structs.New(dm)
 	s.TagName = "json"
 	stage := s.Map()
-	m, _ := StructToMap(dm.Stage)
-	for key, element := range m {
+	m := structs.New(dm.Stage)
+	m.TagName = "json"
+	for key, element := range m.Map() {
 		stage[key] = element
+	}
+
+	if _, ok := stage["manifests"]; ok {
+		manifests := stage["manifests"].([]string)
+		if len(manifests) > 0 {
+			var finalManifests []map[string]interface{}
+
+			for _, stringManifest := range manifests {
+				manifest := make(map[string]interface{})
+				err := yaml.Unmarshal([]byte(stringManifest), &manifest)
+				if err != nil {
+					return stage
+				}
+				finalManifests = append(finalManifests, manifest)
+			}
+			stage["manifests"] = finalManifests
+		}
 	}
 	return stage
 }
@@ -408,8 +442,9 @@ func (fafr *FindArtifactsFromResource) MarshallToMap() map[string]interface{} {
 	s := structs.New(fafr)
 	s.TagName = "json"
 	stage := s.Map()
-	m, _ := StructToMap(fafr.Stage)
-	for key, element := range m {
+	m := structs.New(fafr.Stage)
+	m.TagName = "json"
+	for key, element := range m.Map() {
 		stage[key] = element
 	}
 	return stage
@@ -439,9 +474,9 @@ type ManualJudgment struct {
 	//+optional
 	SendNotifications bool `json:"sendNotifications,omitempty"`
 	//+optional
-	Notifications []*ManualJudgmentNotification `json:"notifications,omitempty"`
+	Notifications []*ManualJudgmentNotification `json:"notifications"`
 	//+optional
-	JudgmentInputs []JudgmentInput `json:"judgmentInputs,omitempty"`
+	JudgmentInputs []JudgmentInput `json:"judgmentInputs"`
 }
 
 // JudgmentInput TODO description
@@ -486,8 +521,9 @@ func (mj *ManualJudgment) MarshallToMap() map[string]interface{} {
 	s := structs.New(mj)
 	s.TagName = "json"
 	stage := s.Map()
-	m, _ := StructToMap(mj.Stage)
-	for key, element := range m {
+	m := structs.New(mj.Stage)
+	m.TagName = "json"
+	for key, element := range m.Map() {
 		stage[key] = element
 	}
 	return stage
@@ -532,10 +568,23 @@ func (urm *UndoRolloutManifest) MarshallToMap() map[string]interface{} {
 	s := structs.New(urm)
 	s.TagName = "json"
 	stage := s.Map()
-	m, _ := StructToMap(urm.Stage)
-	for key, element := range m {
+	m := structs.New(urm.Stage)
+	m.TagName = "json"
+	for key, element := range m.Map() {
 		stage[key] = element
 	}
+
+	//When we have static target the manifestname is the union of kind and targetName
+	if modevalue, ok := stage["mode"]; ok && modevalue == UndoRolloutManifestStaticMode {
+		manifestName, err := GenerateManifestName(stage)
+
+		if err != nil {
+			return stage
+		}
+
+		stage["manifestName"] = manifestName
+	}
+
 	return stage
 }
 
@@ -628,8 +677,9 @@ func (w *Webhook) MarshallToMap() map[string]interface{} {
 	s.TagName = "json"
 
 	stage := s.Map()
-	m, _ := StructToMap(w.Stage)
-	for key, element := range m {
+	m := structs.New(w.Stage)
+	m.TagName = "json"
+	for key, element := range m.Map() {
 		stage[key] = element
 	}
 
@@ -677,10 +727,10 @@ type MatchStage struct {
 func (su MatchStage) ToSpinnakerStage() (map[string]interface{}, error) {
 
 	s := su.GetStage().(SpinnakerMatchStage)
-
 	err := s.NewStageFromBytes(su.Properties.Raw)
 
 	stage := s.MarshallToMap()
+	stage["type"] = su.Type
 	delete(stage, "Stage")
 	return stage, err
 }

@@ -22,11 +22,12 @@ spec:
           name: armory/pacrd
           artifactAccount: docker-registry
   stages:
-    - type: BakeManifest
-      name: lol
-      refId: "1"
-    - type: ManualJudgment
-      name: oh-wow
-      refId: "2"
-      requisiteStageRefIds: ["1"]
-      manualJudgment: {}
+    - type: bakeManifest
+      properties:
+        name: lol
+        refId: "1"
+    - type: manualJudgment
+      properties:
+        name: oh-wow
+        refId: "2"
+        requisiteStageRefIds: ["1"]

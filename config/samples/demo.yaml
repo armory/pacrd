@@ -33,10 +33,10 @@ spec:
       useDefaultArtifact: false
       usePriorArtifact: false
   stages:
-    - type: BakeManifest
-      refId: "1"
-      name: Bake Simple Deploy
-      bakeManifest:
+    - type: bakeManifest
+      properties:
+        refId: "1"
+        name: Bake Simple Deploy
         namespace: ffreire
         evaluateOverrideExpressions: false
         outputName: cm
@@ -50,14 +50,14 @@ spec:
         completeOtherBranchesThenFail: true
         overrides:
           foo: bar
-    - type: ManualJudgment
-      name: Manual Judgment
-      refId: "2"
-      requisiteStageRefIds: [ "1" ]
-      stageEnabled:
-        type: expression
-        expression: "${parameters.run-with-judgment} == true"
-      manualJudgment:
+    - type: manualJudgment
+      properties:
+        name: Manual Judgment
+        refId: "2"
+        requisiteStageRefIds: [ "1" ]
+        stageEnabled:
+          type: expression
+          expression: "${parameters.run-with-judgment} == true"
         failPipeline: true
         continuePipeline: false
         completeOtherBranchesThenFail: false

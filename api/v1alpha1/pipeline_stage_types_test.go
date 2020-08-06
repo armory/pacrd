@@ -13,9 +13,7 @@ func TestMatchStage_ToSpinnakerStage_vs_Deck(t *testing.T) {
 			Name:  "Bake (Manifest)",
 			RefID: "1",
 		},
-		Namespace:      "default",
-		InputArtifacts: []*ArtifactReference{},
-		Overrides:      map[string]string{},
+		Namespace: "default",
 	}
 
 	findArtifactsFromResource := FindArtifactsFromResource{

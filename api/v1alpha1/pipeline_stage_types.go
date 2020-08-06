@@ -15,7 +15,7 @@ type Stage struct {
 	RefID string `json:"refId"`
 	// RequisiteStageRefIds is a list of RefIDs that are required before this stage can run.
 	// +optional
-	RequisiteStageRefIds []string `json:"requisiteStageRefIds"`
+	RequisiteStageRefIds []string `json:"requisiteStageRefIds,omitempty"`
 	// StageEnabled represents whether this stage is active in a pipeline graph.
 	// +optional
 	StageEnabled *StageEnabled `json:"stageEnabled,omitempty"`
@@ -128,14 +128,14 @@ type BakeManifest struct {
 	// +optional
 	ExpectedArtifacts []Artifact `json:"expectedArtifacts,omitempty"`
 	// +optional
-	InputArtifacts []*ArtifactReference `json:"inputArtifacts"`
+	InputArtifacts []*ArtifactReference `json:"inputArtifacts,omitempty"`
 	// InputArtifact is used by the Kustomize variant of BakeManifest to pull in a single artifact.
 	// +optional
-	InputArtifact ArtifactReference `json:"inputArtifact"`
+	InputArtifact ArtifactReference `json:"inputArtifact,omitempty"`
 	// +optional
 	OutputName string `json:"outputName,omitempty"`
 	// +optional
-	Overrides map[string]string `json:"overrides"`
+	Overrides map[string]string `json:"overrides,omitempty"`
 	// +optional
 	RawOverrides     bool   `json:"rawOverrides,omitempty"`
 	TemplateRenderer string `json:"templateRenderer,omitempty"`
@@ -159,12 +159,24 @@ func (bk *BakeManifest) MarshallToMap() map[string]interface{} {
 func (bk *BakeManifest) NewStageFromBytes(data []byte) error {
 	err := json.Unmarshal(data, bk)
 
-	if err != nil {
-		return err
+	if len(bk.Stage.RequisiteStageRefIds) == 0 {
+		bk.Stage.RequisiteStageRefIds = []string{}
 	}
 
-	if bk.Namespace == "" {
-		return fmt.Errorf("namespace must be defined for this stage")
+	if len(bk.Stage.RequisiteStageRefIds) == 0 {
+		bk.Stage.RequisiteStageRefIds = []string{}
+	}
+
+	if len(bk.InputArtifacts) == 0 {
+		bk.InputArtifacts = []*ArtifactReference{}
+	}
+
+	if len(bk.Overrides) == 0 {
+		bk.Overrides = make(map[string]string)
+	}
+
+	if err != nil {
+		return err
 	}
 
 	return nil

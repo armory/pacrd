@@ -2,10 +2,10 @@
 apiVersion: pacrd.armory.spinnaker.io/v1alpha1
 kind: Pipeline
 metadata:
-  name: &app-name pacrd-pipeline-stages-samples
+  name: pacrd-bakemanifest-samples
 spec:
   description: Bake Manifest pipeline sample
-  application: test
+  application:  &app-name pacrd-pipeline-stages-samples
   stages:
     # Note: In `v0.1.x` you are required to specify _both_ `type: BakeManifest`
     #       as well as place options under a `bakeManifest` key. Consult the

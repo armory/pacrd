@@ -5,7 +5,7 @@ metadata:
   name: pacrd-webhook-samples
 spec:
   description: Samples for Webhooks
-  application: pacrd-pipeline-stages-samples
+  application:  &app-name pacrd-pipeline-stages-samples
   stages:
     - type: webhook
       properties:

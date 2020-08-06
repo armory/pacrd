@@ -34,6 +34,18 @@ type Stage struct {
 	SkipWindowText string `json:"skipWindowText,omitempty"`
 }
 
+func (s *Stage) Marshal() map[string]interface{} {
+
+	if len(s.RequisiteStageRefIds) == 0 {
+		s.RequisiteStageRefIds = []string{}
+	}
+
+	m := structs.New(s)
+	m.TagName = "json"
+	return m.Map()
+
+}
+
 func (su *MatchStage) GetStage() interface{} {
 	var s SpinnakerMatchStage
 	switch su.Type {
@@ -148,9 +160,7 @@ func (bk *BakeManifest) MarshallToMap() map[string]interface{} {
 	s := structs.New(bk)
 	s.TagName = "json"
 	stage := s.Map()
-	m := structs.New(bk.Stage)
-	m.TagName = "json"
-	for key, element := range m.Map() {
+	for key, element := range bk.Stage.Marshal() {
 		stage[key] = element
 	}
 	return stage
@@ -158,14 +168,6 @@ func (bk *BakeManifest) MarshallToMap() map[string]interface{} {
 
 func (bk *BakeManifest) NewStageFromBytes(data []byte) error {
 	err := json.Unmarshal(data, bk)
-
-	if len(bk.Stage.RequisiteStageRefIds) == 0 {
-		bk.Stage.RequisiteStageRefIds = []string{}
-	}
-
-	if len(bk.Stage.RequisiteStageRefIds) == 0 {
-		bk.Stage.RequisiteStageRefIds = []string{}
-	}
 
 	if len(bk.InputArtifacts) == 0 {
 		bk.InputArtifacts = []*ArtifactReference{}
@@ -186,7 +188,7 @@ type CheckPreconditions struct {
 	Stage `json:",inline"`
 	Type  string `json:"type"`
 	// +optional
-	Preconditions []*Precondition `json:"preconditions"`
+	Preconditions []*Precondition `json:"preconditions,omitempty"`
 }
 
 // Precondition TODO likely needs to be refined to support more than expressions
@@ -206,9 +208,7 @@ func (cp *CheckPreconditions) MarshallToMap() map[string]interface{} {
 	s := structs.New(cp)
 	s.TagName = "json"
 	stage := s.Map()
-	m := structs.New(cp.Stage)
-	m.TagName = "json"
-	for key, element := range m.Map() {
+	for key, element := range cp.Stage.Marshal() {
 		stage[key] = element
 	}
 	return stage
@@ -216,6 +216,10 @@ func (cp *CheckPreconditions) MarshallToMap() map[string]interface{} {
 
 func (cp *CheckPreconditions) NewStageFromBytes(data []byte) error {
 	err := json.Unmarshal(data, cp)
+
+	if len(cp.Preconditions) == 0 {
+		cp.Preconditions = []*Precondition{}
+	}
 
 	if err != nil {
 		return err
@@ -295,9 +299,7 @@ func (dm *DeleteManifest) MarshallToMap() map[string]interface{} {
 	s := structs.New(dm)
 	s.TagName = "json"
 	stage := s.Map()
-	m := structs.New(dm.Stage)
-	m.TagName = "json"
-	for key, element := range m.Map() {
+	for key, element := range dm.Stage.Marshal() {
 		stage[key] = element
 	}
 
@@ -403,9 +405,7 @@ func (dm *DeployManifest) MarshallToMap() map[string]interface{} {
 	s := structs.New(dm)
 	s.TagName = "json"
 	stage := s.Map()
-	m := structs.New(dm.Stage)
-	m.TagName = "json"
-	for key, element := range m.Map() {
+	for key, element := range dm.Stage.Marshal() {
 		stage[key] = element
 	}
 
@@ -454,9 +454,7 @@ func (fafr *FindArtifactsFromResource) MarshallToMap() map[string]interface{} {
 	s := structs.New(fafr)
 	s.TagName = "json"
 	stage := s.Map()
-	m := structs.New(fafr.Stage)
-	m.TagName = "json"
-	for key, element := range m.Map() {
+	for key, element := range fafr.Stage.Marshal() {
 		stage[key] = element
 	}
 	return stage
@@ -533,9 +531,7 @@ func (mj *ManualJudgment) MarshallToMap() map[string]interface{} {
 	s := structs.New(mj)
 	s.TagName = "json"
 	stage := s.Map()
-	m := structs.New(mj.Stage)
-	m.TagName = "json"
-	for key, element := range m.Map() {
+	for key, element := range mj.Stage.Marshal() {
 		stage[key] = element
 	}
 	return stage
@@ -580,9 +576,7 @@ func (urm *UndoRolloutManifest) MarshallToMap() map[string]interface{} {
 	s := structs.New(urm)
 	s.TagName = "json"
 	stage := s.Map()
-	m := structs.New(urm.Stage)
-	m.TagName = "json"
-	for key, element := range m.Map() {
+	for key, element := range urm.Stage.Marshal() {
 		stage[key] = element
 	}
 
@@ -689,9 +683,7 @@ func (w *Webhook) MarshallToMap() map[string]interface{} {
 	s.TagName = "json"
 
 	stage := s.Map()
-	m := structs.New(w.Stage)
-	m.TagName = "json"
-	for key, element := range m.Map() {
+	for key, element := range w.Stage.Marshal() {
 		stage[key] = element
 	}
 

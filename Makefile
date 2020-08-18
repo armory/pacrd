@@ -27,8 +27,8 @@ ifeq (, $(shell which kubebuilder))
 	curl -L https://go.kubebuilder.io/dl/2.2.0/${OS}/${ARCH} | tar -xz -C .
 	mv ./kubebuilder_2.2.0_${OS}_${ARCH} ./kubebuilder
 endif
-	export PATH=$PATH:${PWD}/kubebuilder/bin
-	export KUBEBUILDER_ASSETS="${PWD}/kubebuilder/bin"
+export PATH=$PATH:${PWD}/kubebuilder/bin
+export KUBEBUILDER_ASSETS="${PWD}/kubebuilder/bin"
 	kubebuilder version
 	go test -v -mod=vendor -race -covermode atomic -coverprofile=profile.cov ./...
 

@@ -19,20 +19,8 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v2
     - name: Test PaCRD
-      run: |
-        # Install `kubebuilder` into the environment.
-        os=$(go env GOOS)
-        arch=$(go env GOARCH)
-
-        curl -L https://go.kubebuilder.io/dl/2.2.0/${os}/${arch} | tar -xz -C .
-
-        mv ./kubebuilder_2.2.0_${os}_${arch} ./kubebuilder
-        export PATH=$PATH:$(pwd)/kubebuilder/bin
-        export KUBEBUILDER_ASSETS="$(pwd)/kubebuilder/bin"
-
-        ls "$KUBEBUILDER_ASSETS"
-
-        kubebuilder version
-
-        # Run our tests
-        make test
+      run: make test
+    - name: Send Coverage
+      uses: shogo82148/actions-goveralls@v1
+      with:
+        path-to-profile: profile.cov

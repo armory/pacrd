@@ -1,10 +1,12 @@
 package v1alpha1
 
 import (
+	"fmt"
+	"testing"
+
 	"github.com/leanovate/gopter"
 	"github.com/leanovate/gopter/gen"
 	"github.com/leanovate/gopter/prop"
-	"testing"
 )
 
 func TestToSpinnakerStage_DeployManifest_HappyPath(t *testing.T) {
@@ -30,7 +32,7 @@ spec:
 				Manifests:     []string{sampleYaml},
 				Stage: Stage{
 					Name:  name,
-					RefID: string(refId),
+					RefID: fmt.Sprint(refId),
 				},
 			}
 
@@ -83,7 +85,7 @@ func TestToSpinnakerStage_DeployManifest_ArtifactHappyPath(t *testing.T) {
 				ManifestArtifactID:      artifactId,
 				Stage: Stage{
 					Name:  name,
-					RefID: string(refId),
+					RefID: fmt.Sprint(refId),
 				},
 			}
 

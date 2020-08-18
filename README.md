@@ -1,3 +1,4 @@
+[![Coverage Status](https://coveralls.io/repos/github/armory-io/pacrd/badge.svg?t=XzvmI0)](https://coveralls.io/github/armory-io/pacrd)
 [![experiment](https://img.shields.io/badge/status-experiment-yellowgreen?style=flat-square)](https://kb.armory.io/releases/early-release-beta-GA/)
 
 # pacrd

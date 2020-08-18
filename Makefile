@@ -5,6 +5,9 @@ IMG ?= armory/pacrd:${RELEASE}
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true"
 DOCS_PROJECT ?= ~/armory/documentation
+OS=$(shell go env GOOS)
+ARCH=$(shell go env GOARCH)
+PWD=$(shell pwd)
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -13,11 +16,21 @@ else
 GOBIN=$(shell go env GOBIN)
 endif
 
+
+
+
 all: manager
 
 # Run tests
 test: generate fmt vet manifests
-	go test ./... -coverprofile cover.out
+ifeq (, $(shell which kubebuilder))
+	curl -L https://go.kubebuilder.io/dl/2.2.0/${OS}/${ARCH} | tar -xz -C .
+	mv ./kubebuilder_2.2.0_${OS}_${ARCH} ./kubebuilder
+endif
+	export PATH=$PATH:${PWD}/kubebuilder/bin
+	export KUBEBUILDER_ASSETS="${PWD}/kubebuilder/bin"
+	kubebuilder version
+	go test -v -mod=vendor -race -covermode atomic -coverprofile=profile.cov ./...
 
 # Build manager binary
 manager: generate fmt vet

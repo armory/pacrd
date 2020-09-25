@@ -1,0 +1,106 @@
+{
+    "appConfig": {},
+    "keepWaitingPipelines": false,
+    "lastModifiedBy": "anonymous",
+    "limitConcurrent": true,
+    "parameterConfig": [],
+    "spelEvaluator": "v4",
+    "stages": [
+      {
+        "account": "spinnaker",
+        "cloudProvider": "kubernetes",
+        "manifestArtifact": {
+          "artifactAccount": "embedded-artifact",
+          "name": "apply tests",
+          "reference": "",
+          "type": "embedded/base64"
+        },
+        "moniker": {
+          "app": "testpacrd"
+        },
+        "name": "Apply  PaCRD tests",
+        "refId": "2",
+        "requisiteStageRefIds": [
+          "1"
+        ],
+        "skipExpressionEvaluation": false,
+        "source": "artifact",
+        "trafficManagement": {
+          "enabled": false,
+          "options": {
+            "enableTraffic": false,
+            "services": []
+          }
+        },
+        "type": "deployManifest"
+      },
+      {
+        "name": "Wait 1 minute just in case",
+        "refId": "3",
+        "requisiteStageRefIds": [
+          "4"
+        ],
+        "type": "wait",
+        "waitTime": 60
+      },
+      {
+        "account": "spinnaker",
+        "cloudProvider": "kubernetes",
+        "manifestArtifact": {
+          "artifactAccount": "embedded-artifact",
+          "name": "install pacrd",
+          "reference": "",
+          "type": "embedded/base64"
+        },
+        "moniker": {
+          "app": "testpacrd"
+        },
+        "name": "Install PaCRD",
+        "refId": "1",
+        "requisiteStageRefIds": [],
+        "skipExpressionEvaluation": false,
+        "source": "artifact",
+        "trafficManagement": {
+          "enabled": false,
+          "options": {
+            "enableTraffic": false,
+            "services": []
+          }
+        },
+        "type": "deployManifest"
+      },
+      {
+        "account": "spinnaker",
+        "cloudProvider": "kubernetes",
+        "isNew": true,
+        "manifestArtifact": {
+          "artifactAccount": "embedded-artifact",
+          "name": "apply integration tests",
+          "reference": "",
+          "type": "embedded/base64"
+        },
+        "moniker": {
+          "app": "testpacrd"
+        },
+        "name": "Apply Integration tests",
+        "refId": "4",
+        "requisiteStageRefIds": [
+          "2"
+        ],
+        "skipExpressionEvaluation": false,
+        "source": "artifact",
+        "trafficManagement": {
+          "enabled": false,
+          "options": {
+            "enableTraffic": false,
+            "namespace": null,
+            "services": [],
+            "strategy": null
+          }
+        },
+        "type": "deployManifest"
+      }
+    ],
+    "triggers": [],
+    "updateTs": "1598866765000"
+  }

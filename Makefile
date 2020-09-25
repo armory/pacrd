@@ -8,6 +8,7 @@ DOCS_PROJECT ?= ~/armory/documentation
 OS=$(shell go env GOOS)
 ARCH=$(shell go env GOARCH)
 PWD=$(shell pwd)
+server-name=armory-docker-local
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -17,7 +18,20 @@ GOBIN=$(shell go env GOBIN)
 endif
 
 
+integration-test-generate-dockerimage: test
+	cd config/manager && kustomize edit set image controller=${IMG}
+	kustomize build config/default > integration_test/pacrd.yaml
+	# docker build -t armory-io/pacrd-integration-test:$(shell date -u +%Y%m%d%H%M%S) -f Dockerfile.integrationtest .
+	# docker build -t armory-docker-local.jfrog.io/armory/pacrd-integration-test:latest -f Dockerfile.integrationtest .
+	docker build -t pacrd-integration-test:latest -f Dockerfile.integrationtest .
 
+integration-test-run: integration-test-generate-dockerimage
+	docker run --privileged pacrd-integration-test:latest
+
+integration-test-push-image: integration-test-generate-dockerimage
+	@docker login ${server-name}.jfrog.io -u $(shell grep "artifactory_user" ~/.gradle/gradle.properties |cut -d'=' -f2) -p $(shell grep "artifactory_password" ~/.gradle/gradle.properties |cut -d'=' -f2)
+	docker tag pacrd-integration-test:latest ${server-name}.jfrog.io/armory/pacrd-integration-test:latest
+	docker push ${server-name}.jfrog.io/armory/pacrd-integration-test:latest
 
 all: manager
 

@@ -1,0 +1,45 @@
+# FROM golang:1.14 as builder
+# WORKDIR /app
+# COPY . .
+# RUN make build && bin/k3d version
+
+# FROM armory/debugging-tools:latest
+
+FROM docker:19.03-dind as builder
+
+ENV USER_UID=1001 \
+    USER_NAME=spinnaker \
+    KUSTOMIZE_VERSION=3.5.4 \
+    KUBECTL_VER=1.18.2 \
+    PYTHON_VERSION=3.8.5
+
+
+RUN apk add bash curl sudo jq git make sed wget python3 py3-pip
+
+RUN curl -s https://raw.githubusercontent.com/rancher/k3d/main/install.sh | bash
+
+RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl && \
+    chmod +x ./kubectl && \
+    mv ./kubectl /usr/local/bin/kubectl
+
+RUN curl -sLf https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${KUSTOMIZE_VERSION}/kustomize_v${KUSTOMIZE_VERSION}_linux_amd64.tar.gz -o kustomize.tar.gz \
+    && tar xf kustomize.tar.gz \
+    && mv kustomize /usr/local/bin \
+    && chmod +x /usr/local/bin/kustomize
+
+RUN curl -LO https://storage.googleapis.com/spinnaker-artifacts/spin/$(curl -s https://storage.googleapis.com/spinnaker-artifacts/spin/latest)/linux/amd64/spin \
+    && chmod +x spin \
+    && mv spin /usr/local/bin/spin
+
+RUN pip install pyyaml
+
+RUN mkdir -p /home/spinnaker/pacrd/
+WORKDIR /home/spinnaker/pacrd/
+
+COPY ./integration_test/ .
+COPY config/samples/pacrd-test-samples/ ./pacrd-test-samples
+COPY config/samples/pacrd-integration-test-samples/ ./pacrd-integration-test-samples
+
+EXPOSE 8084 9000
+
+ENTRYPOINT ["/home/spinnaker/pacrd/integration_test.sh"]

@@ -1,0 +1,35 @@
+{
+    "spec": {
+        "spinnakerConfig": {
+            "config": {
+                "providers": {
+                    "kubernetes": {
+                        "enabled": true,
+                        "accounts": [
+                            {
+                                "cacheThreads": 1,
+                                "cachingPolicies": [],
+                                "checkPermissionsOnStartup": true,
+                                "customResources": [],
+                                "dockerRegistries": [],
+                                "kinds": [],
+                                "liveManifestCalls": false,
+                                "name": "spinnaker",
+                                "oAuthScopes": [],
+                                "omitKinds": [],
+                                "omitNamespaces": [],
+                                "onlySpinnakerManaged": false,
+                                "permissions": {},
+                                "providerVersion": "V2",
+                                "serviceAccount": true,
+                                "namespaces": [
+                                    "spinnaker"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}

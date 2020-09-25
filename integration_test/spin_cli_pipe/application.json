@@ -1,0 +1,10 @@
+{
+    "name": "testpacrd",
+    "email": "spinnaker_admin@example.com",
+    "cloudProviders": "kubernetes",
+    "trafficGuards": [],
+    "instancePort": 80,
+    "repoType": "",
+    "description" : "test for pacrd",
+    "user": "spinnaker_admin@example.com"
+}

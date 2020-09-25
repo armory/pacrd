@@ -1,0 +1,4 @@
+# NOTE: Copy this file to ~/.spin/config
+
+gate:
+  endpoint: http://localhost:8084

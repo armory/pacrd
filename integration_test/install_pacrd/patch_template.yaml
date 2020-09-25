@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pacrd-config
+  namespace: spinnaker
+data:
+  pacrd.yaml: |
+    spinnakerServices:
+      # NOTE: change `spinnaker` to your namespace name here
+      front50: http://spin-front50.<namespace>:8080
+      orca: http://spin-orca.<namespace>:8083

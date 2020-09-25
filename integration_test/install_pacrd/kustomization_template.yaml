@@ -1,0 +1,5 @@
+resources:
+  - pacrd.yaml
+patchesStrategicMerge:
+  - patched.yaml
+namespace: <namespace>

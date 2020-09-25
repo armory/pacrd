@@ -6,6 +6,13 @@ metadata:
 spec:
   description: Check Preconditions example
   application: &app-name pacrd-pipeline-stages-samples
+  parameterConfig:
+    - name: canary_deploy
+      default: "false"
+      hasOptions: false
+      label: canary_deploy
+      pinned: false
+      required: true
   stages:
     - type: checkPreconditions
       properties:
@@ -14,5 +21,6 @@ spec:
         preconditions:
           - type: expression
             context:
-              expression: "${parameters.canary_deploy} == true"
+              expression: parameters[  \"canary_deploy\"  ]  == \"true\"
+              failureMessage: "this execution failed"
             failPipeline: true

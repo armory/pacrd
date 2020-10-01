@@ -19,6 +19,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/armory-io/pacrd/pkg/events"
+	"github.com/mitchellh/mapstructure"
 	"time"
 
 	"github.com/armory/plank"
@@ -47,6 +49,7 @@ type ApplicationReconciler struct {
 	Scheme          *runtime.Scheme
 	SpinnakerClient spinnaker.Client
 	Recorder        record.EventRecorder
+	EventClient 	events.EventClient
 }
 
 // +kubebuilder:rbac:groups=pacrd.armory.spinnaker.io,resources=applications,verbs=get;list;watch;create;update;patch;delete
@@ -83,8 +86,12 @@ func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 				string(pacrdv1alpha1.ApplicationDeletionFailed),
 				err.Error(),
 			)
+			r.EventClient.SendError(string(pacrdv1alpha1.ApplicationDeletionFailed), err)
 			return r.complete(app, pacrdv1alpha1.ApplicationDeletionFailed, err)
 		}
+
+		// Do we need this information?
+		r.EventClient.SendEvent("ApplicationDeleted", applicationToMap(app))
 
 		logger.Info("successfully deleted application from spinnaker")
 		return ctrl.Result{}, nil
@@ -107,6 +114,7 @@ func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 			if spinErr != nil {
 				// TODO it's possible this will never succeed, consider backoff
 				//      or general failure
+				r.EventClient.SendError(string(pacrdv1alpha1.ApplicationCreationFailed), spinErr)
 				return r.complete(app, pacrdv1alpha1.ApplicationCreationFailed, spinErr)
 			}
 
@@ -116,6 +124,10 @@ func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 				string(pacrdv1alpha1.ApplicationCreated),
 				"Application created in Spinnaker",
 			)
+
+			// Do we need this information?
+			r.EventClient.SendEvent(string(pacrdv1alpha1.ApplicationCreated), applicationToMap(app))
+
 			logger.Info("created spinnaker app")
 			return r.complete(app, pacrdv1alpha1.ApplicationCreated, nil)
 		}
@@ -129,6 +141,7 @@ func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 			string(pacrdv1alpha1.ApplicationCreationFailed),
 			spinErr.Error(),
 		)
+		r.EventClient.SendError(string(pacrdv1alpha1.ApplicationCreationFailed), spinErr)
 		return r.complete(app, pacrdv1alpha1.ApplicationCreationFailed, spinErr)
 	}
 
@@ -142,6 +155,7 @@ func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 			string(pacrdv1alpha1.ApplicationUpdateFailed),
 			err.Error(),
 		)
+		r.EventClient.SendError(string(pacrdv1alpha1.ApplicationUpdateFailed), err)
 		return r.complete(app, pacrdv1alpha1.ApplicationUpdateFailed, err)
 	}
 
@@ -159,6 +173,10 @@ func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		string(pacrdv1alpha1.ApplicationUpdated),
 		"Application updated",
 	)
+
+	// Do we need this information?
+	r.EventClient.SendEvent(string(pacrdv1alpha1.ApplicationUpdated), applicationToMap(app))
+
 	logger.Info("done reconciling application")
 	return r.complete(app, pacrdv1alpha1.ApplicationUpdated, nil)
 }
@@ -225,4 +243,14 @@ func (r *ApplicationReconciler) setPhase(app pacrdv1alpha1.Application, p pacrdv
 func (r *ApplicationReconciler) complete(app pacrdv1alpha1.Application, phase pacrdv1alpha1.ApplicationPhase, e error) (ctrl.Result, error) {
 	_ = r.setPhase(app, phase)
 	return ctrl.Result{}, e
+}
+
+
+func applicationToMap( app pacrdv1alpha1.Application) map[string]interface{} {
+	applicationMap := make(map[string]interface{})
+	err := mapstructure.Decode(app, &applicationMap)
+	if err != nil {
+		return nil
+	}
+	return applicationMap
 }

@@ -19,6 +19,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/armory-io/pacrd/pkg/events"
+	"github.com/mitchellh/mapstructure"
 	"time"
 
 	"github.com/armory/plank"
@@ -45,6 +47,7 @@ type PipelineReconciler struct {
 	Scheme          *runtime.Scheme
 	SpinnakerClient spinnaker.Client
 	Recorder        record.EventRecorder
+	EventClient 	events.EventClient
 }
 
 // +kubebuilder:rbac:groups=pacrd.armory.spinnaker.io,resources=pipelines,verbs=get;list;watch;create;update;patch;delete
@@ -74,6 +77,7 @@ func (r *PipelineReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		_ = r.setPhase(pipeline, pacrdv1alpha1.PipelineDeleting)
 
 		if err := r.deletePipeline(pipeline); err != nil {
+			r.EventClient.SendError(string(pacrdv1alpha1.PipelineDeletionFailed), err)
 			return r.complete(pipeline, pacrdv1alpha1.PipelineDeletionFailed, err)
 		}
 
@@ -101,6 +105,8 @@ func (r *PipelineReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 						string(pacrdv1alpha1.PipelineValidationFailed),
 						err.Error(),
 					)
+
+					r.EventClient.SendError(string(pacrdv1alpha1.PipelineValidationFailed), err)
 					return r.complete(pipeline, pacrdv1alpha1.PipelineValidationFailed, err)
 				}
 
@@ -123,19 +129,29 @@ func (r *PipelineReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		logger.Info("Did not find pipeline in Spinnaker, creating...")
 
 		if err := r.createPipeline(pipeline); err != nil {
+			r.EventClient.SendError(string(pacrdv1alpha1.PipelineCreationFailed), err)
 			return r.complete(pipeline, pacrdv1alpha1.PipelineCreationFailed, err)
 		}
 
 		logger.Info("Created spinnaker pipeline")
+
+		// Do we need this information?
+		r.EventClient.SendEvent(string(pacrdv1alpha1.PipelineCreated), pipelineToMap(pipeline))
+
 		return r.complete(pipeline, pacrdv1alpha1.PipelineCreated, nil)
 	}
 
 	logger.Info("Updating pipeline")
 	if err := r.updatePipeline(ctx, pipeline, upstreamPipeline); err != nil {
 		logger.Info("Failed to update pipeline")
+		r.EventClient.SendError(string(pacrdv1alpha1.PipelineUpdateFailed), err)
 		return r.complete(pipeline, pacrdv1alpha1.PipelineUpdateFailed, err)
 	}
 	logger.Info("Done updating pipeline")
+
+	// Do we need this information?
+	r.EventClient.SendEvent(string(pacrdv1alpha1.PipelineUpdated), pipelineToMap(pipeline))
+
 	return r.complete(pipeline, pacrdv1alpha1.PipelineUpdated, nil)
 
 	// TODO watches on Application types
@@ -185,6 +201,7 @@ func (r *PipelineReconciler) getPipeline(pipeline pacrdv1alpha1.Pipeline) (plank
 			string(pacrdv1alpha1.PipelineOrApplicationNotFound),
 			err.Error(),
 		)
+		r.EventClient.SendError(string(pacrdv1alpha1.PipelineOrApplicationNotFound), err)
 		return plank.Pipeline{}, err
 	}
 
@@ -207,7 +224,7 @@ func (r *PipelineReconciler) createPipeline(pipeline pacrdv1alpha1.Pipeline) err
 			string(pacrdv1alpha1.PipelineCreationFailed),
 			err.Error(),
 		)
-
+		r.EventClient.SendError(string(pacrdv1alpha1.PipelineCreationFailed), err)
 		return err
 	}
 
@@ -222,7 +239,7 @@ func (r *PipelineReconciler) createPipeline(pipeline pacrdv1alpha1.Pipeline) err
 			string(pacrdv1alpha1.PipelineCreationFailed),
 			err.Error(),
 		)
-
+		r.EventClient.SendError(string(pacrdv1alpha1.PipelineCreationFailed), err)
 		return err
 	}
 	r.Recorder.Eventf(
@@ -231,6 +248,10 @@ func (r *PipelineReconciler) createPipeline(pipeline pacrdv1alpha1.Pipeline) err
 		string(pacrdv1alpha1.PipelineUpdated),
 		"Pipeline successfully created in Spinnaker.",
 	)
+
+	// Do we need this information?
+	r.EventClient.SendEvent(string(pacrdv1alpha1.PipelineUpdated), pipelineToMap(pipeline))
+	
 	return nil
 }
 
@@ -246,6 +267,7 @@ func (r *PipelineReconciler) updatePipeline(ctx context.Context, pipeline pacrdv
 			string(pacrdv1alpha1.PipelineUpdateFailed),
 			err.Error(),
 		)
+		r.EventClient.SendError(string(pacrdv1alpha1.PipelineUpdateFailed), err)
 		return err
 
 	}
@@ -258,6 +280,7 @@ func (r *PipelineReconciler) updatePipeline(ctx context.Context, pipeline pacrdv
 			string(pacrdv1alpha1.PipelineUpdateFailed),
 			err.Error(),
 		)
+		r.EventClient.SendError(string(pacrdv1alpha1.PipelineUpdateFailed), err)
 		return err
 	}
 
@@ -267,6 +290,10 @@ func (r *PipelineReconciler) updatePipeline(ctx context.Context, pipeline pacrdv
 		string(pacrdv1alpha1.PipelineUpdated),
 		"Pipeline successfully updated in Spinnaker.",
 	)
+
+	// Do we need this information?
+	r.EventClient.SendEvent(string(pacrdv1alpha1.PipelineUpdated), pipelineToMap(pipeline))
+	
 	return nil
 }
 
@@ -325,4 +352,13 @@ func findPipeline(pipelines []plank.Pipeline, name string, id string) (plank.Pip
 		}
 	}
 	return plank.Pipeline{}, fmt.Errorf("could not find pipeline in list of returned pipelines")
+}
+
+func pipelineToMap( pipeline pacrdv1alpha1.Pipeline) map[string]interface{} {
+	pipelineMap := make(map[string]interface{})
+	err := mapstructure.Decode(pipeline, &pipelineMap)
+	if err != nil {
+		return nil
+	}
+	return pipelineMap
 }

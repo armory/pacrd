@@ -17,6 +17,8 @@ package main
 
 import (
 	"flag"
+	"fmt"
+	"github.com/armory-io/pacrd/pkg/events"
 	"os"
 
 	pacrdv1alpha1 "github.com/armory-io/pacrd/api/v1alpha1"
@@ -72,6 +74,16 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Create a new relic app
+	eventClient, errevent  := events.NewNewRelicEventClient(events.EventClientSettings{
+		AppName: "pacrd",
+		ApiKey:  pacrdConfig.NewRelicLicense,
+	})
+	if errevent != nil {
+		fmt.Println("unable to create New Relic Application", err)
+	}
+
+
 	spinnakerClient := plank.New()
 	spinnakerClient.URLs["orca"] = pacrdConfig.SpinnakerServices.Orca
 	spinnakerClient.URLs["front50"] = pacrdConfig.SpinnakerServices.Front50
@@ -86,6 +98,7 @@ func main() {
 		Scheme:          mgr.GetScheme(),
 		SpinnakerClient: spinnakerClient,
 		Recorder:        mgr.GetEventRecorderFor("applications"),
+		EventClient:	 eventClient,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Application")
 		os.Exit(1)
@@ -96,6 +109,7 @@ func main() {
 		Scheme:          mgr.GetScheme(),
 		SpinnakerClient: spinnakerClient,
 		Recorder:        mgr.GetEventRecorderFor("pipelines"),
+		EventClient:	 eventClient,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Pipeline")
 		os.Exit(1)

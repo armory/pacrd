@@ -6,6 +6,8 @@ import (
 
 // PacrdConfig represents the valid configuration options for PaCRD
 type PacrdConfig struct {
+	// NewRelicLicense (optional) license.
+	NewRelicLicense string
 	// FiatServiceAccount (optional) the service account to annotate API calls with.
 	FiatServiceAccount string
 	// SpinnakerServices defines the location of Spinnaker services in your environment.

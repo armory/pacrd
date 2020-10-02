@@ -14,6 +14,7 @@ COPY main.go main.go
 COPY configfile.go configfile.go
 COPY api/ api/
 COPY controllers/ controllers/
+COPY events/ events/
 COPY spinnaker/ spinnaker/
 
 # Build

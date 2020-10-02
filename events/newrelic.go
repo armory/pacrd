@@ -43,7 +43,6 @@ func NewNewRelicEventClient(settings EventClientSettings) (EventClient, error) {
 	app, err := newrelic.NewApplication( config )
 	// If an application could not be created then err will reveal why.
 	if err != nil {
-		fmt.Sprintf("Failed to create app because: %v", err)
 		return nil, err
 	}
 	return &NewRelicClient{

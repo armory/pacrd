@@ -80,7 +80,7 @@ func main() {
 		ApiKey:  pacrdConfig.NewRelicLicense,
 	})
 	if errevent != nil {
-		fmt.Println("unable to create New Relic Application", err)
+		fmt.Println("unable to create New Relic Application", errevent)
 		eventClient = new(events.DefaultClient)
 	}
 

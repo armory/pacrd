@@ -12,6 +12,7 @@ require (
 	github.com/google/go-cmp v0.3.1 // indirect
 	github.com/hashicorp/golang-lru v0.5.3 // indirect
 	github.com/leanovate/gopter v0.2.7
+	github.com/mitchellh/mapstructure v1.1.2
 	github.com/newrelic/go-agent v3.9.0+incompatible
 	github.com/onsi/ginkgo v1.10.1
 	github.com/onsi/gomega v1.7.0

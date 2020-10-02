@@ -47,6 +47,8 @@ order to run the controller locally you will need to:
 
 ```yaml
 # file: /path/to/pacrd/pacrd.yaml
+#NewRelicLicense: <license>
+#FiatServiceAccount: <fiatAccount>
 spinnakerServices:
   front50: http://localhost:8080
   orca: http://localhost:8083

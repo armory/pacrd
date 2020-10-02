@@ -5,7 +5,7 @@ import (
 )
 
 type EventClient interface {
-	SendEvent(string)
+	SendEvent(string, map[string]interface{})
 	SendError(string, error)
 	SendPipelineStages(plank.Pipeline)
 }

@@ -19,7 +19,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/armory-io/pacrd/pkg/events"
+	"github.com/armory-io/pacrd/events"
+	"github.com/mitchellh/mapstructure"
 	"time"
 
 	"github.com/armory/plank"
@@ -46,7 +47,7 @@ type PipelineReconciler struct {
 	Scheme          *runtime.Scheme
 	SpinnakerClient spinnaker.Client
 	Recorder        record.EventRecorder
-	EventClient 	events.EventClient
+	EventClient     events.EventClient
 }
 
 // +kubebuilder:rbac:groups=pacrd.armory.spinnaker.io,resources=pipelines,verbs=get;list;watch;create;update;patch;delete
@@ -135,7 +136,7 @@ func (r *PipelineReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		logger.Info("Created spinnaker pipeline")
 
 		// Do we need this information?
-		r.EventClient.SendEvent("Pipeline" + string(pacrdv1alpha1.PipelineCreated))
+		r.EventClient.SendEvent("Pipeline" + string(pacrdv1alpha1.PipelineCreated), pipelineToMap(pipeline))
 
 		return r.complete(pipeline, pacrdv1alpha1.PipelineCreated, nil)
 	}
@@ -149,7 +150,7 @@ func (r *PipelineReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	logger.Info("Done updating pipeline")
 
 	// Do we need this information?
-	r.EventClient.SendEvent("Pipeline" + string(pacrdv1alpha1.PipelineUpdated))
+	r.EventClient.SendEvent("Pipeline" + string(pacrdv1alpha1.PipelineUpdated), pipelineToMap(pipeline))
 
 	return r.complete(pipeline, pacrdv1alpha1.PipelineUpdated, nil)
 
@@ -252,7 +253,7 @@ func (r *PipelineReconciler) createPipeline(pipeline pacrdv1alpha1.Pipeline) err
 	)
 
 	// Do we need this information?
-	r.EventClient.SendEvent("Pipeline" + string(pacrdv1alpha1.PipelineUpdated))
+	r.EventClient.SendEvent("Pipeline" + string(pacrdv1alpha1.PipelineUpdated), pipelineToMap(pipeline))
 	
 	return nil
 }
@@ -299,7 +300,7 @@ func (r *PipelineReconciler) updatePipeline(ctx context.Context, pipeline pacrdv
 	)
 
 	// Do we need this information?
-	r.EventClient.SendEvent("Pipeline" + string(pacrdv1alpha1.PipelineUpdated))
+	r.EventClient.SendEvent("Pipeline" + string(pacrdv1alpha1.PipelineUpdated), pipelineToMap(pipeline))
 	
 	return nil
 }
@@ -359,4 +360,13 @@ func findPipeline(pipelines []plank.Pipeline, name string, id string) (plank.Pip
 		}
 	}
 	return plank.Pipeline{}, fmt.Errorf("could not find pipeline in list of returned pipelines")
+}
+
+func pipelineToMap( pipeline pacrdv1alpha1.Pipeline) map[string]interface{} {
+	pipelineMap := make(map[string]interface{})
+	err := mapstructure.Decode(pipeline, &pipelineMap)
+	if err != nil {
+		return nil
+	}
+	return pipelineMap
 }

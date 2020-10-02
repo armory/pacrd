@@ -18,7 +18,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/armory-io/pacrd/pkg/events"
+	"github.com/armory-io/pacrd/events"
 	"os"
 
 	pacrdv1alpha1 "github.com/armory-io/pacrd/api/v1alpha1"
@@ -81,6 +81,7 @@ func main() {
 	})
 	if errevent != nil {
 		fmt.Println("unable to create New Relic Application", err)
+		eventClient = new(events.DefaultClient)
 	}
 
 

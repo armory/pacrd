@@ -1,7 +1,8 @@
 package events
 
 import (
-	"encoding/json"
+	"fmt"
+	"github.com/armory/plank"
 	newrelic "github.com/newrelic/go-agent"
 )
 
@@ -9,14 +10,12 @@ type NewRelicClient struct {
 	Application newrelic.Application
 }
 
-func (client *NewRelicClient) SendEvent( eventName string ,eventValue map[string]interface{}) {
+func (client *NewRelicClient) SendEvent( eventName string ) {
 	if client.Application != nil {
 
-		jsonBytes, _ := json.Marshal(eventValue)
+		// We just need to have the eventName to know reconciliations
 		txn := client.Application.StartTransaction(eventName, nil, nil )
 		defer txn.End()
-		txn.SetName(eventName)
-		txn.AddAttribute("content", string(jsonBytes) )
 
 	}
 }
@@ -31,9 +30,21 @@ func (client *NewRelicClient) SendError(eventName string, trace error) {
 	}
 }
 
+func (client *NewRelicClient) SendPipelineStages( pipeline plank.Pipeline ) {
+	if client.Application != nil {
+		for _, stage := range pipeline.Stages {
+			if val, ok := stage["type"]; ok {
+				client.SendEvent(fmt.Sprintf("%v", val))
+			}
+		}
+	}
+}
+
+
 
 func NewNewRelicEventClient(settings EventClientSettings) (EventClient, error) {
-	app, err := newrelic.NewApplication( newrelic.NewConfig(settings.AppName, settings.ApiKey));
+	config := newrelic.NewConfig(settings.AppName, settings.ApiKey)
+	app, err := newrelic.NewApplication( config )
 	// If an application could not be created then err will reveal why.
 	return &NewRelicClient{
 		Application: app,

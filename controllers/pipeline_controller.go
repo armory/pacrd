@@ -20,7 +20,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/armory-io/pacrd/pkg/events"
-	"github.com/mitchellh/mapstructure"
 	"time"
 
 	"github.com/armory/plank"
@@ -136,7 +135,7 @@ func (r *PipelineReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		logger.Info("Created spinnaker pipeline")
 
 		// Do we need this information?
-		r.EventClient.SendEvent(string(pacrdv1alpha1.PipelineCreated), pipelineToMap(pipeline))
+		r.EventClient.SendEvent("Pipeline" + string(pacrdv1alpha1.PipelineCreated))
 
 		return r.complete(pipeline, pacrdv1alpha1.PipelineCreated, nil)
 	}
@@ -150,7 +149,7 @@ func (r *PipelineReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	logger.Info("Done updating pipeline")
 
 	// Do we need this information?
-	r.EventClient.SendEvent(string(pacrdv1alpha1.PipelineUpdated), pipelineToMap(pipeline))
+	r.EventClient.SendEvent("Pipeline" + string(pacrdv1alpha1.PipelineUpdated))
 
 	return r.complete(pipeline, pacrdv1alpha1.PipelineUpdated, nil)
 
@@ -228,6 +227,9 @@ func (r *PipelineReconciler) createPipeline(pipeline pacrdv1alpha1.Pipeline) err
 		return err
 	}
 
+	// Log pipeline stages
+	r.EventClient.SendPipelineStages(pipe)
+
 	if err := r.SpinnakerClient.UpsertPipeline(pipe, ""); err != nil {
 
 		err = spinnaker.UnwrapFrontFiftyBadResponse(err)
@@ -250,7 +252,7 @@ func (r *PipelineReconciler) createPipeline(pipeline pacrdv1alpha1.Pipeline) err
 	)
 
 	// Do we need this information?
-	r.EventClient.SendEvent(string(pacrdv1alpha1.PipelineUpdated), pipelineToMap(pipeline))
+	r.EventClient.SendEvent("Pipeline" + string(pacrdv1alpha1.PipelineUpdated))
 	
 	return nil
 }
@@ -260,6 +262,7 @@ func (r *PipelineReconciler) updatePipeline(ctx context.Context, pipeline pacrdv
 	r.updatePipelineStatus(pipeline, upstreamPipeline, ctx)
 
 	plankPipe, err := pipeline.ToSpinnakerPipeline()
+
 	if err != nil {
 		r.Recorder.Eventf(
 			&pipeline,
@@ -271,6 +274,10 @@ func (r *PipelineReconciler) updatePipeline(ctx context.Context, pipeline pacrdv
 		return err
 
 	}
+
+	// Log pipeline stages
+	r.EventClient.SendPipelineStages(plankPipe)
+
 	if err := r.SpinnakerClient.UpsertPipeline(plankPipe, upstreamPipeline.ID); err != nil {
 		err = spinnaker.UnwrapFrontFiftyBadResponse(err)
 
@@ -292,7 +299,7 @@ func (r *PipelineReconciler) updatePipeline(ctx context.Context, pipeline pacrdv
 	)
 
 	// Do we need this information?
-	r.EventClient.SendEvent(string(pacrdv1alpha1.PipelineUpdated), pipelineToMap(pipeline))
+	r.EventClient.SendEvent("Pipeline" + string(pacrdv1alpha1.PipelineUpdated))
 	
 	return nil
 }
@@ -352,13 +359,4 @@ func findPipeline(pipelines []plank.Pipeline, name string, id string) (plank.Pip
 		}
 	}
 	return plank.Pipeline{}, fmt.Errorf("could not find pipeline in list of returned pipelines")
-}
-
-func pipelineToMap( pipeline pacrdv1alpha1.Pipeline) map[string]interface{} {
-	pipelineMap := make(map[string]interface{})
-	err := mapstructure.Decode(pipeline, &pipelineMap)
-	if err != nil {
-		return nil
-	}
-	return pipelineMap
 }

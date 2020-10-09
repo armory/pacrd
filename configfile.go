@@ -1,6 +1,8 @@
 package main
 
 import (
+	"github.com/armory/go-yaml-tools/pkg/tls/client"
+	"github.com/armory/go-yaml-tools/pkg/tls/server"
 	"github.com/spf13/viper"
 )
 
@@ -12,6 +14,9 @@ type PacrdConfig struct {
 	FiatServiceAccount string
 	// SpinnakerServices defines the location of Spinnaker services in your environment.
 	SpinnakerServices
+	//Server config for mTLS
+	Server	server.ServerConfig `json:"server" yaml:"server"`
+	Http    client.Config       `json:"http" yaml:"http"`
 }
 
 // SpinnakerServices represent the set of services that PaCRD must interface with.

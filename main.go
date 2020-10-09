@@ -19,6 +19,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/armory-io/pacrd/events"
+	"net/http"
 	"os"
 
 	pacrdv1alpha1 "github.com/armory-io/pacrd/api/v1alpha1"
@@ -84,14 +85,26 @@ func main() {
 		eventClient = new(events.DefaultClient)
 	}
 
+	//if log.Level == logr.DebugLevel {
+	//	httpClient = debug.NewInterceptorHttpClient(log, &settings.Http, true)
+	//} else {
+	var httpClient *http.Client
+	if err = pacrdConfig.Http.Init(); err != nil {
+		return
+	}
+	httpClient = pacrdConfig.Http.NewClient()
+	//}
 
-	spinnakerClient := plank.New()
+
+
+	spinnakerClient := plank.New(plank.WithClient(httpClient),
+		plank.WithFiatUser(pacrdConfig.FiatServiceAccount))
 	spinnakerClient.URLs["orca"] = pacrdConfig.SpinnakerServices.Orca
 	spinnakerClient.URLs["front50"] = pacrdConfig.SpinnakerServices.Front50
 	// Optionally set the fiat user if it is provided in the config.
-	if pacrdConfig.FiatServiceAccount != "" {
-		spinnakerClient.FiatUser = pacrdConfig.FiatServiceAccount
-	}
+	//if pacrdConfig.FiatServiceAccount != "" {
+	//	spinnakerClient.FiatUser = pacrdConfig.FiatServiceAccount
+	//}
 
 	if err = (&controllers.ApplicationReconciler{
 		Client:          mgr.GetClient(),

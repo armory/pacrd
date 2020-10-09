@@ -17,7 +17,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"github.com/armory-io/pacrd/events"
 	"net/http"
 	"os"
@@ -81,30 +80,21 @@ func main() {
 		ApiKey:  pacrdConfig.NewRelicLicense,
 	})
 	if errevent != nil {
-		fmt.Println("unable to create New Relic Application", errevent)
+		setupLog.Error(errevent,"unable to create New Relic Application")
 		eventClient = new(events.DefaultClient)
 	}
 
-	//if log.Level == logr.DebugLevel {
-	//	httpClient = debug.NewInterceptorHttpClient(log, &settings.Http, true)
-	//} else {
 	var httpClient *http.Client
 	if err = pacrdConfig.Http.Init(); err != nil {
-		return
+		setupLog.Error(err,"invalid mtls configuration" )
 	}
 	httpClient = pacrdConfig.Http.NewClient()
-	//}
 
-
-
+	// Optionally set the fiat user if it is provided in the config.
 	spinnakerClient := plank.New(plank.WithClient(httpClient),
 		plank.WithFiatUser(pacrdConfig.FiatServiceAccount))
 	spinnakerClient.URLs["orca"] = pacrdConfig.SpinnakerServices.Orca
 	spinnakerClient.URLs["front50"] = pacrdConfig.SpinnakerServices.Front50
-	// Optionally set the fiat user if it is provided in the config.
-	//if pacrdConfig.FiatServiceAccount != "" {
-	//	spinnakerClient.FiatUser = pacrdConfig.FiatServiceAccount
-	//}
 
 	if err = (&controllers.ApplicationReconciler{
 		Client:          mgr.GetClient(),

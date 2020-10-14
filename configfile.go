@@ -10,6 +10,8 @@ import (
 type PacrdConfig struct {
 	// NewRelicLicense (optional) license.
 	NewRelicLicense string
+	// NewRelicApp name (optional)
+	NewRelicAppName	string
 	// FiatServiceAccount (optional) the service account to annotate API calls with.
 	FiatServiceAccount string
 	// SpinnakerServices defines the location of Spinnaker services in your environment.
@@ -34,6 +36,7 @@ func InitConfig() (PacrdConfig, error) {
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
 	viper.AddConfigPath("/opt/pacrd")
+	viper.SetDefault("NewRelicAppName", "pacrd")
 	viper.SetDefault("SpinnakerServices", SpinnakerServices{
 		Front50: "http://spin-front50:8080",
 		Orca:    "http://spin-orca:8083",

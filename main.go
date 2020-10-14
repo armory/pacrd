@@ -18,6 +18,7 @@ package main
 import (
 	"flag"
 	"github.com/armory-io/pacrd/events"
+	"io/ioutil"
 	"net/http"
 	"os"
 
@@ -42,6 +43,27 @@ func init() {
 
 	_ = pacrdv1alpha1.AddToScheme(scheme)
 	// +kubebuilder:scaffold:scheme
+}
+
+// Read the password file and replace the value with the actual file content
+func readAndOverwriteTLSPasswords(pacrdconfig *PacrdConfig) error {
+	if pacrdconfig.Server.Ssl.KeyPassword != "" {
+		dat, err := ioutil.ReadFile(pacrdconfig.Server.Ssl.KeyPassword)
+		if err != nil {
+			return err
+		} else {
+			pacrdconfig.Server.Ssl.KeyPassword = string(dat)
+		}
+	}
+	if pacrdconfig.Http.ClientKeyPassword != "" {
+		dat, err := ioutil.ReadFile(pacrdconfig.Http.ClientKeyPassword)
+		if err != nil {
+			return err
+		} else {
+			pacrdconfig.Http.ClientKeyPassword = string(dat)
+		}
+	}
+	return nil
 }
 
 func main() {
@@ -75,19 +97,33 @@ func main() {
 	}
 
 	// Create a new relic app
-	eventClient, errevent  := events.NewNewRelicEventClient(events.EventClientSettings{
-		AppName: "pacrd",
-		ApiKey:  pacrdConfig.NewRelicLicense,
-	})
-	if errevent != nil {
-		setupLog.Error(errevent,"unable to create New Relic Application")
+	var eventClient events.EventClient
+	if pacrdConfig.NewRelicLicense == "" {
 		eventClient = new(events.DefaultClient)
+	} else  {
+		var errevent error
+		eventClient, errevent = events.NewNewRelicEventClient(events.EventClientSettings{
+			AppName: pacrdConfig.NewRelicAppName,
+			ApiKey:  pacrdConfig.NewRelicLicense,
+		})
+		if errevent != nil {
+			setupLog.Error(errevent,"unable to create New Relic Application")
+			// Life goes on
+			eventClient = new(events.DefaultClient)
+		}
 	}
 
+	// TLS config
 	var httpClient *http.Client
-	if err = pacrdConfig.Http.Init(); err != nil {
-		setupLog.Error(err,"invalid mtls configuration" )
+	tlserr := readAndOverwriteTLSPasswords(&pacrdConfig)
+	if tlserr != nil {
+		setupLog.Error(tlserr,"invalid mtls configuration" )
+	} else {
+		if err = pacrdConfig.Http.Init(); err != nil {
+			setupLog.Error(err,"invalid mtls configuration" )
+		}
 	}
+
 	httpClient = pacrdConfig.Http.NewClient()
 
 	// Optionally set the fiat user if it is provided in the config.

@@ -8,6 +8,8 @@ import (
 
 // PacrdConfig represents the valid configuration options for PaCRD
 type PacrdConfig struct {
+	// TrimSpaceTlsPassword (optional) used when parsing tls password to delete spaces and new lines
+	TrimSpaceTlsPassword bool
 	// NewRelicLicense (optional) license.
 	NewRelicLicense string
 	// NewRelicApp name (optional)
@@ -37,6 +39,7 @@ func InitConfig() (PacrdConfig, error) {
 	viper.AddConfigPath(".")
 	viper.AddConfigPath("/opt/pacrd")
 	viper.SetDefault("NewRelicAppName", "pacrd")
+	viper.SetDefault("TrimSpaceTlsPassword", true)
 	viper.SetDefault("SpinnakerServices", SpinnakerServices{
 		Front50: "http://spin-front50:8080",
 		Orca:    "http://spin-orca:8083",

@@ -17,10 +17,12 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"github.com/armory-io/pacrd/events"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 
 	pacrdv1alpha1 "github.com/armory-io/pacrd/api/v1alpha1"
 	"github.com/armory-io/pacrd/controllers"
@@ -52,7 +54,14 @@ func readAndOverwriteTLSPasswords(pacrdconfig *PacrdConfig) error {
 		if err != nil {
 			return err
 		} else {
-			pacrdconfig.Server.Ssl.KeyPassword = string(dat)
+			tlspass := string(dat)
+			if pacrdconfig.TrimSpaceTlsPassword {
+				tlspass = strings.TrimSpace(tlspass)
+				if string(dat) != tlspass {
+					fmt.Print("pacrdconfig.Server.Ssl.KeyPassword had spaces or new lines that were trimmed")
+				}
+			}
+			pacrdconfig.Server.Ssl.KeyPassword = tlspass
 		}
 	}
 	if pacrdconfig.Http.ClientKeyPassword != "" {
@@ -60,7 +69,14 @@ func readAndOverwriteTLSPasswords(pacrdconfig *PacrdConfig) error {
 		if err != nil {
 			return err
 		} else {
-			pacrdconfig.Http.ClientKeyPassword = string(dat)
+			tlspass := string(dat)
+			if pacrdconfig.TrimSpaceTlsPassword {
+				tlspass = strings.TrimSpace(tlspass)
+				if string(dat) != tlspass {
+					fmt.Print("pacrdconfig.Http.ClientKeyPassword had spaces or new lines that were trimmed")
+				}
+			}
+			pacrdconfig.Http.ClientKeyPassword = tlspass
 		}
 	}
 	return nil

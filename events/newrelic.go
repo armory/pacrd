@@ -89,7 +89,7 @@ func NewNewRelicEventClient(settings EventClientSettings) (EventClient, error) {
 
 
 func(client *NewRelicClient) IsTimeToSend()  bool{
-	// Every hour metrics will be send for 2 minutes
+	// Every hour metrics will be send for 3 minutes
 	if time.Now().Minute() <= 2 {
 		return true
 	}

@@ -15,7 +15,6 @@ type NewRelicClient struct {
 	Application newrelic.Application
 	pacapps		map[string]bool
 	apppipes	map[string]bool
-	lastUpdatedDate	time.Time
 }
 
 func (client *NewRelicClient) SendEvent( eventName string, value map[string]interface{} ) {

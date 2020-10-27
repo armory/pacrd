@@ -1,4 +1,5 @@
-#DeleteManifest
+### Undo Rollout Manifest
+# file: pipeline-stage-undorolloutmanifest.yaml
 apiVersion: pacrd.armory.spinnaker.io/v1alpha1
 kind: Pipeline
 metadata:
@@ -21,7 +22,7 @@ spec:
         account: kubernetes
         app: *app-name
         cloudProvider: kubernetes
-        location: &location ffreire
+        location: &location spinnaker
         mode: static
         kind: apiService
         targetName: testingName

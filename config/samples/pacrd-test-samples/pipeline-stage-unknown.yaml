@@ -1,4 +1,5 @@
-#Unknown
+### Unknown stage
+# file: pipeline-stage-unknown.yaml
 apiVersion: pacrd.armory.spinnaker.io/v1alpha1
 kind: Pipeline
 metadata:

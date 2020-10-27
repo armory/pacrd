@@ -1,4 +1,5 @@
-# file: pipeline.yaml
+### Bake Manifest
+# file: pipeline-stage-bakemanifest.yaml
 apiVersion: pacrd.armory.spinnaker.io/v1alpha1
 kind: Pipeline
 metadata:
@@ -7,13 +8,9 @@ spec:
   description: Bake Manifest pipeline sample
   application:  &app-name pacrd-pipeline-stages-samples
   stages:
-    # Note: In `v0.1.x` you are required to specify _both_ `type: BakeManifest`
-    #       as well as place options under a `bakeManifest` key. Consult the
-    #       "Known Limitations" section below for more information.
     - type: bakeManifest
       properties:
         name: Bake Application
         refId: "1"
-#        evaluateOverrideExpressions: false
         outputName: *app-name
-#        templateRenderer: helm2
+        templateRenderer: helm2

@@ -1,3 +1,5 @@
+### Deploy manifest
+# file: pipeline-stage-deploy-manifest.yaml
 apiVersion: pacrd.armory.spinnaker.io/v1alpha1
 kind: Pipeline
 metadata:
@@ -26,7 +28,7 @@ spec:
         moniker: 
           app: *app-name
         manifestArtifactId: *image-id
-        namespaceOverride: jossuegamez
+        namespaceOverride: spinnaker
         requiredArtifactIds: [ "my-artifact" ]
         skipExpressionEvaluation: true
         source: artifact
@@ -46,14 +48,14 @@ spec:
         cloudProvider: kubernetes
         moniker:
           app: *app-name
-        namespaceOverride: jossuegamez
+        namespaceOverride: spinnaker
         skipExpressionEvaluation: true
         source: text
         trafficManagement:
           enabled: true
           options:
             enableTraffic: true
-            namespace: jossuegamez
+            namespace: spinnaker
             services: [ "servicea", "serviceb" ]
             strategy: redblack
         manifests:

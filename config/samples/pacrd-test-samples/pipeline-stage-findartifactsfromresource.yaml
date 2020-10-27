@@ -1,4 +1,5 @@
-# file: pipeline.yaml
+### Find artifacts from resource
+# file: pipeline-stage-findartifactsfromresource.yaml
 apiVersion: pacrd.armory.spinnaker.io/v1alpha1
 kind: Pipeline
 metadata:
@@ -11,9 +12,9 @@ spec:
       properties:
         refId: "1"
         name: Find Baseline
-        account: jossuegamez
+        account: kubernetes
         app: *app-name
         cloudProvider: kubernetes
-        location: jossuegamez
+        location: spinnaker
         manifestName: deployment something
         mode: static

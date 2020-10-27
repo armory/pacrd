@@ -15,8 +15,8 @@ github.com/armory/go-yaml-tools/pkg/secrets
 github.com/armory/go-yaml-tools/pkg/tls
 github.com/armory/go-yaml-tools/pkg/tls/client
 github.com/armory/go-yaml-tools/pkg/tls/server
-# github.com/armory/plank v1.3.1-0.20200320030005-945d760f2b32
-github.com/armory/plank
+# github.com/armory/plank/v3 v3.4.3
+github.com/armory/plank/v3
 # github.com/aws/aws-sdk-go v1.28.9
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/arn

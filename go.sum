@@ -44,6 +44,8 @@ github.com/armory/go-yaml-tools v0.0.0-20200805235652-dff4b25b6fc7 h1:2v+yHTEsk7
 github.com/armory/go-yaml-tools v0.0.0-20200805235652-dff4b25b6fc7/go.mod h1:LasFFVo6zuV334Pmx7Diq9L3muOUUI8MF79QUFC1jq0=
 github.com/armory/plank v1.3.1-0.20200320030005-945d760f2b32 h1:fMi44xWk9y1I6uViwOMuuoyh9VSetoDahXCgkvNSApo=
 github.com/armory/plank v1.3.1-0.20200320030005-945d760f2b32/go.mod h1:e92pyeAmWYNGVf0ziQ/SPmD+G4Nw79xXQztSr1SSMzM=
+github.com/armory/plank/v3 v3.4.3 h1:6DMMpGjUWi/kn9zcBSl6Y98zG5nkg/5g7psXyxAXByY=
+github.com/armory/plank/v3 v3.4.3/go.mod h1:8M359Bf4VNI2NVlgy8PG5+KpyVB8+0DaVI8KqNSpLcQ=
 github.com/asaskevich/govalidator v0.0.0-20180720115003-f9ffefc3facf/go.mod h1:lB+ZfQJz7igIIfQNfa7Ml4HSf2uFQQRzpGGRXenZAgY=
 github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a/go.mod h1:lB+ZfQJz7igIIfQNfa7Ml4HSf2uFQQRzpGGRXenZAgY=
 github.com/aws/aws-sdk-go v1.28.9 h1:grIuBQc+p3dTRXerh5+2OxSuWFi0iXuxbFdTSg0jaW0=

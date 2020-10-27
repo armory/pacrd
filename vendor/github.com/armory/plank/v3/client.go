@@ -89,7 +89,7 @@ func WithFiatUser(user string) ClientOption {
 	}
 }
 
-func WithURLs(urls map[string]string) ClientOption {
+func WithOverrideAllURLs(urls map[string]string) ClientOption {
 	return func(c *Client) {
 		c.URLs = make(map[string]string)
 		for k, v := range urls {
@@ -100,10 +100,10 @@ func WithURLs(urls map[string]string) ClientOption {
 
 // DefaultURLs
 var DefaultURLs = map[string]string{
-	"orca":    "http://armory-orca:8083",
-	"front50": "http://armory-front50:8080",
-	"fiat":    "http://armory-fiat:7003",
-	"gate":    "http://armory-gate:8084",
+	"orca":    "http://localhost:8083",
+	"front50": "http://localhost:8080",
+	"fiat":    "http://localhost:7003",
+	"gate":    "http://localhost:8084",
 }
 
 // New constructs a Client using a default client and sane non-shared http transport
@@ -212,6 +212,10 @@ func (c *Client) request(method Method, url string, contentType ContentType, bod
 
 	b, err := ioutil.ReadAll(resp.Body)
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		if string(b) == "" {
+			dest = make(map[string]interface{})
+			return nil
+		}
 		return json.Unmarshal(b, dest)
 	} else if resp.StatusCode >= 400 && resp.StatusCode < 600 {
 		return &FailedResponse{StatusCode: resp.StatusCode, Response: b}

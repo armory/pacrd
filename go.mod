@@ -4,7 +4,8 @@ go 1.13
 
 require (
 	github.com/armory/go-yaml-tools v0.0.0-20200805235652-dff4b25b6fc7
-	github.com/armory/plank v1.3.1-0.20200320030005-945d760f2b32
+	github.com/armory/plank v1.3.1-0.20200320030005-945d760f2b32 // indirect
+	github.com/armory/plank/v3 v3.4.3
 	github.com/fatih/structs v1.1.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-logr/logr v0.1.0

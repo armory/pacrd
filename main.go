@@ -26,7 +26,7 @@ import (
 
 	pacrdv1alpha1 "github.com/armory-io/pacrd/api/v1alpha1"
 	"github.com/armory-io/pacrd/controllers"
-	"github.com/armory/plank"
+	"github.com/armory/plank/v3"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"

@@ -3,7 +3,7 @@ package events
 import (
 	"fmt"
 	"github.com/armory-io/pacrd/api/v1alpha1"
-	"github.com/armory/plank"
+	"github.com/armory/plank/v3"
 	"github.com/mitchellh/mapstructure"
 	newrelic "github.com/newrelic/go-agent"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

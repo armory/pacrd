@@ -16,7 +16,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"github.com/armory/plank"
+	"github.com/armory/plank/v3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 

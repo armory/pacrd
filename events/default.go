@@ -1,6 +1,6 @@
 package events
 
-import "github.com/armory/plank"
+import "github.com/armory/plank/v3"
 
 type DefaultClient struct {
 }

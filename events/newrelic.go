@@ -7,6 +7,7 @@ import (
 	"github.com/mitchellh/mapstructure"
 	newrelic "github.com/newrelic/go-agent"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"time"
 )
 
 
@@ -14,11 +15,14 @@ type NewRelicClient struct {
 	Application newrelic.Application
 	pacapps		map[string]bool
 	apppipes	map[string]bool
+	lastUpdatedDate	time.Time
 }
 
 func (client *NewRelicClient) SendEvent( eventName string, value map[string]interface{} ) {
 	if client.Application != nil {
-
+		if !client.IsTimeToSend(){
+			return
+		}
 		// We just need to have the eventName to know reconciliations
 		txn := client.Application.StartTransaction(eventName, nil, nil )
 		defer txn.End()
@@ -57,6 +61,9 @@ func (client *NewRelicClient) SendError(eventName string, trace error) {
 }
 
 func (client *NewRelicClient) SendPipelineStages( pipeline plank.Pipeline ) {
+	if !client.IsTimeToSend(){
+		return
+	}
 	for _, stage := range pipeline.Stages {
 		if val, ok := stage["type"]; ok {
 			client.SendEvent(fmt.Sprintf("%v", val), stage)
@@ -78,4 +85,13 @@ func NewNewRelicEventClient(settings EventClientSettings) (EventClient, error) {
 		pacapps: make(map[string]bool),
 		apppipes: make(map[string]bool),
 	}, err
+}
+
+
+func(client *NewRelicClient) IsTimeToSend()  bool{
+	// Every hour metrics will be send for 2 minutes
+	if time.Now().Minute() <= 2 {
+		return true
+	}
+	return false
 }

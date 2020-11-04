@@ -7,6 +7,7 @@ import (
 	"github.com/mitchellh/mapstructure"
 	newrelic "github.com/newrelic/go-agent"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"regexp"
 	"time"
 )
 
@@ -52,11 +53,32 @@ func (client *NewRelicClient) SendEvent( eventName string, value map[string]inte
 }
 
 func (client *NewRelicClient) SendError(eventName string, trace error) {
-
+	if !client.IsTimeToSend(){
+		return
+	}
+	filteredError := FilterErrorMessage(trace)
+	trace = fmt.Errorf("%v", string(filteredError))
 	txn := client.Application.StartTransaction(eventName, nil, nil )
 	defer txn.End()
 	txn.NoticeError(trace)
 
+}
+
+func FilterErrorMessage(err error) []byte {
+	errByte := []byte(fmt.Sprintf("%v", err))
+	errByte = FilterLocalhostMessage(errByte)
+	errByte = FilterAppMessage(errByte)
+	return errByte
+}
+
+func FilterLocalhostMessage(message []byte) []byte {
+	localhost := regexp.MustCompile(`(https?:\/\/[a-z0-9-]+)`)
+	return localhost.ReplaceAll(message, []byte("http://obfuscated_url"))
+}
+
+func FilterAppMessage(message []byte) []byte {
+	appMessage := regexp.MustCompile(`(?P<label>to application)(?P<appname>.+ -)`)
+	return appMessage.ReplaceAll(message, []byte("${1} obfuscated_app_name"))
 }
 
 func (client *NewRelicClient) SendPipelineStages( pipeline plank.Pipeline ) {

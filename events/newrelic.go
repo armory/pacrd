@@ -30,6 +30,7 @@ func (client *NewRelicClient) SendEvent( eventName string, value map[string]inte
 		if val, ok := value["TypeMeta"]; ok {
 			var typeMeta = metav1.TypeMeta{}
 			mapstructure.Decode(val, &typeMeta)
+			// Filter pipelines and apps by kind
 			if typeMeta.Kind == "Pipeline" {
 				var pipe = v1alpha1.Pipeline{}
 				errdecpipe := mapstructure.Decode(value, &pipe)

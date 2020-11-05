@@ -67,18 +67,18 @@ func (client *NewRelicClient) SendError(eventName string, trace error) {
 
 func FilterErrorMessage(err error) []byte {
 	errByte := []byte(fmt.Sprintf("%v", err))
-	errByte = FilterLocalhostMessage(errByte)
+	errByte = FilterServiceUrlMessage(errByte)
 	errByte = FilterAppMessage(errByte)
 	return errByte
 }
 
-func FilterLocalhostMessage(message []byte) []byte {
+func FilterServiceUrlMessage(message []byte) []byte {
 	localhost := regexp.MustCompile(`(https?:\/\/[a-z0-9-]+)`)
 	return localhost.ReplaceAll(message, []byte("http://obfuscated_url"))
 }
 
 func FilterAppMessage(message []byte) []byte {
-	appMessage := regexp.MustCompile(`(?P<label>to application)(?P<appname>.+ -)`)
+	appMessage := regexp.MustCompile(`(?P<label>to application)(?P<appname>.+?\s)`)
 	return appMessage.ReplaceAll(message, []byte("${1} obfuscated_app_name"))
 }
 

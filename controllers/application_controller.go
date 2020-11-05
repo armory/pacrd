@@ -190,7 +190,7 @@ func (r *ApplicationReconciler) deleteApplication(app pacrdv1alpha1.Application)
 	if containsString(finalizers, AppFinalizerName) {
 		if err := r.SpinnakerClient.DeleteApplication(app.Name); err != nil {
 			var fr *plank.ErrUnsupportedStatusCode
-			if fr != nil && fr.Code == 404 {
+			if errors.As(err, &fr) && fr.Code == 404 {
 				// This situation implies the application was already deleted, either
 				// by something else or a previously failed delete reconcile. Either
 				// way we only care that it's gone, so do nothing here.

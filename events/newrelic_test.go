@@ -65,7 +65,7 @@ func TestFilterServiceUrlMessage(t *testing.T) {
 		},
 		{
 			name: `localhostHttpsExampleSuccess`,
-			message: `could not create application - Post http://localhost:8083/ops: dial tcp [::1]:8083: connect: connection refused`,
+			message: `could not create application - Post https://localhost:8083/ops: dial tcp [::1]:8083: connect: connection refused`,
 			want: `could not create application - Post http://obfuscated_url:8083/ops: dial tcp [::1]:8083: connect: connection refused`,
 		},
 		{

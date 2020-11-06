@@ -79,6 +79,12 @@ generate-public-manifest: manifests
 publish-public-manifest: generate-public-manifest
 	aws --region=us-east-1 --profile=prod s3 cp pacrd-${RELEASE}.yaml s3://engineering.armory.io/manifests/pacrd-${RELEASE}.yaml
 
+# Publish the publicly consumable manifest to one of our properties, this is used in prod for release so no profile is needed
+publish-public-manifest-no-profile: generate-public-manifest
+	aws --region=us-east-1 s3 cp pacrd-${RELEASE}.yaml s3://engineering.armory.io/manifests/pacrd-${RELEASE}.yaml
+
+
+
 # Cache busting; Useful if you need to supply a quick fix to a manifest
 invalidate-manifest-cache:
 	aws --region=us-east-1 --profile=prod cloudfront create-invalidation --distribution-id ENJEJHR8VKPZA --paths /\*

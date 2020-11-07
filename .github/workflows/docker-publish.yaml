@@ -89,3 +89,9 @@ jobs:
           docker image tag armory-docker-local.jfrog.io/armory/$BASE_PROJECT:$RELEASE armory/$BASE_PROJECT:$RELEASE
           echo "Pushing image..."
           docker push armory/$BASE_PROJECT:$RELEASE
+
+      - name: Release Manifest and update Armory docs
+        if: startsWith(github.ref, 'refs/heads/release-')
+        run: |
+          curl -v -u armory-jenkins:$GIT_TOKEN -H "Content-Type:application/json" -X POST https://spinnaker-api.armory.io/webhooks/webhook/publish-manifest \
+          -d '{ "secret" : "${{ secrets.PIPELINE_SECRET }}", "parameters" : { "RELEASE" : "$RELEASE" } }'

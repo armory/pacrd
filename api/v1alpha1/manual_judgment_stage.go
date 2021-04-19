@@ -2,6 +2,7 @@ package v1alpha1
 
 import (
 	"encoding/json"
+
 	"github.com/fatih/structs"
 )
 
@@ -9,7 +10,6 @@ import (
 type ManualJudgment struct {
 	Stage          `json:",inline"`
 	Type           string `json:"type"`
-	FailPipeline   bool   `json:"failPipeline,omitempty"`
 	Instructions   string `json:"instructions,omitempty"`
 	StageTimeoutMs int    `json:"stageTimeoutMs,omitempty"`
 	//+optional

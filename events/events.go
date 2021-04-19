@@ -12,5 +12,5 @@ type EventClient interface {
 
 type EventClientSettings struct {
 	AppName string
-	ApiKey 	string
+	ApiKey  string
 }

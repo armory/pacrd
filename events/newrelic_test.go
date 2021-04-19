@@ -7,14 +7,14 @@ import (
 
 func TestFilterAppMessage(t *testing.T) {
 	tests := []struct {
-		name string
+		name    string
 		message string
-		want string
+		want    string
 	}{
 		{
-			name: `appMessageFilterSuccess`,
+			name:    `appMessageFilterSuccess`,
 			message: `*errors.errorString: Forbidden: {"timestamp":"2020-11-04T22:47:56.580+00:00","status":403,"error":"Forbidden","message":"Access denied to application this-is-my-app-name - required authorization: READ"}`,
-			want: `*errors.errorString: Forbidden: {"timestamp":"2020-11-04T22:47:56.580+00:00","status":403,"error":"Forbidden","message":"Access denied to application obfuscated_app_name- required authorization: READ"}`,
+			want:    `*errors.errorString: Forbidden: {"timestamp":"2020-11-04T22:47:56.580+00:00","status":403,"error":"Forbidden","message":"Access denied to application obfuscated_app_name- required authorization: READ"}`,
 		},
 	}
 	for _, tt := range tests {
@@ -28,14 +28,14 @@ func TestFilterAppMessage(t *testing.T) {
 
 func TestFilterErrorMessage(t *testing.T) {
 	tests := []struct {
-		name string
+		name    string
 		message string
-		want string
+		want    string
 	}{
 		{
-			name: `TestFilterErrorMessageSuccess`,
+			name:    `TestFilterErrorMessageSuccess`,
 			message: `*errors.errorString: Forbidden: {"timestamp":"2020-11-04T22:47:56.580+00:00","status":403,"error":"Forbidden","message":"Access denied to application this-is-my-app-name - required authorization: READ"}`,
-			want: `*errors.errorString: Forbidden: {"timestamp":"2020-11-04T22:47:56.580+00:00","status":403,"error":"Forbidden","message":"Access denied to application obfuscated_app_name- required authorization: READ"}`,
+			want:    `*errors.errorString: Forbidden: {"timestamp":"2020-11-04T22:47:56.580+00:00","status":403,"error":"Forbidden","message":"Access denied to application obfuscated_app_name- required authorization: READ"}`,
 		},
 	}
 	for _, tt := range tests {
@@ -49,29 +49,29 @@ func TestFilterErrorMessage(t *testing.T) {
 
 func TestFilterServiceUrlMessage(t *testing.T) {
 	tests := []struct {
-		name string
+		name    string
 		message string
-		want string
+		want    string
 	}{
 		{
-			name: `localhostExampleSuccess`,
+			name:    `localhostExampleSuccess`,
 			message: `could not create application - Post http://localhost:8083/ops: dial tcp [::1]:8083: connect: connection refused`,
-			want: `could not create application - Post http://obfuscated_url:8083/ops: dial tcp [::1]:8083: connect: connection refused`,
+			want:    `could not create application - Post http://obfuscated_url:8083/ops: dial tcp [::1]:8083: connect: connection refused`,
 		},
 		{
-			name: `spinEchoExampleSuccess`,
+			name:    `spinEchoExampleSuccess`,
 			message: `could not create application - Post http://spin-echo:8083/ops: dial tcp [::1]:8083: connect: connection refused`,
-			want: `could not create application - Post http://obfuscated_url:8083/ops: dial tcp [::1]:8083: connect: connection refused`,
+			want:    `could not create application - Post http://obfuscated_url:8083/ops: dial tcp [::1]:8083: connect: connection refused`,
 		},
 		{
-			name: `localhostHttpsExampleSuccess`,
+			name:    `localhostHttpsExampleSuccess`,
 			message: `could not create application - Post https://localhost:8083/ops: dial tcp [::1]:8083: connect: connection refused`,
-			want: `could not create application - Post http://obfuscated_url:8083/ops: dial tcp [::1]:8083: connect: connection refused`,
+			want:    `could not create application - Post http://obfuscated_url:8083/ops: dial tcp [::1]:8083: connect: connection refused`,
 		},
 		{
-			name: `spinEchoHttpsExampleSuccess`,
+			name:    `spinEchoHttpsExampleSuccess`,
 			message: `could not create application - Post https://spin-echo:8083/ops: dial tcp [::1]:8083: connect: connection refused`,
-			want: `could not create application - Post http://obfuscated_url:8083/ops: dial tcp [::1]:8083: connect: connection refused`,
+			want:    `could not create application - Post http://obfuscated_url:8083/ops: dial tcp [::1]:8083: connect: connection refused`,
 		},
 	}
 	for _, tt := range tests {
@@ -82,4 +82,3 @@ func TestFilterServiceUrlMessage(t *testing.T) {
 		})
 	}
 }
-

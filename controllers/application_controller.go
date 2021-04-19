@@ -19,9 +19,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/armory-io/pacrd/events"
 	"github.com/mitchellh/mapstructure"
-	"time"
 
 	"github.com/armory/plank"
 	"github.com/go-logr/logr"
@@ -61,6 +62,7 @@ func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	ctx := context.Background()
 	logger := r.Log.WithValues("application", req.NamespacedName)
 	logger.Info("reconciling application")
+	logger.Info(fmt.Sprintf("%#v", req))
 	// TODO note that if the app name changes in the object I don't think we'll
 	// be able to cleanly remove it from Spinnaker...
 
@@ -112,8 +114,7 @@ func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 			// If we got an error from Spinnaker we failed to create the app,
 			// so requeue the event.
 			if spinErr != nil {
-				// TODO it's possible this will never succeed, consider backoff
-				//      or general failure
+				// If this fails enough times then the controller will simply stop updating the CRD.
 				r.EventClient.SendError(string(pacrdv1alpha1.ApplicationCreationFailed), spinErr)
 				return r.complete(app, pacrdv1alpha1.ApplicationCreationFailed, spinErr)
 			}
@@ -126,7 +127,7 @@ func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 			)
 
 			// Do we need this information?
-			r.EventClient.SendEvent("Application" + string(pacrdv1alpha1.ApplicationCreated), applicationToMap(app))
+			r.EventClient.SendEvent("Application"+string(pacrdv1alpha1.ApplicationCreated), applicationToMap(app))
 
 			logger.Info("created spinnaker app")
 			return r.complete(app, pacrdv1alpha1.ApplicationCreated, nil)
@@ -175,7 +176,7 @@ func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	)
 
 	// Do we need this information?
-	r.EventClient.SendEvent("Application" + string(pacrdv1alpha1.ApplicationUpdated), applicationToMap(app))
+	r.EventClient.SendEvent("Application"+string(pacrdv1alpha1.ApplicationUpdated), applicationToMap(app))
 
 	logger.Info("done reconciling application")
 	return r.complete(app, pacrdv1alpha1.ApplicationUpdated, nil)
@@ -241,11 +242,15 @@ func (r *ApplicationReconciler) setPhase(app pacrdv1alpha1.Application, p pacrdv
 // Complete a reconciliation loop for the current pipeline and update phase.
 // TODO this is a good candidate for some interfaces so it can be shared w/ app controller
 func (r *ApplicationReconciler) complete(app pacrdv1alpha1.Application, phase pacrdv1alpha1.ApplicationPhase, e error) (ctrl.Result, error) {
-	_ = r.setPhase(app, phase)
+	err := r.setPhase(app, phase)
+	if err != nil {
+		logger := r.Log.WithValues("application", app.Name)
+		logger.Info(fmt.Sprintf("could not complete phase: %e", err))
+	}
 	return ctrl.Result{}, e
 }
 
-func applicationToMap( app pacrdv1alpha1.Application) map[string]interface{} {
+func applicationToMap(app pacrdv1alpha1.Application) map[string]interface{} {
 	applicationMap := make(map[string]interface{})
 	err := mapstructure.Decode(app, &applicationMap)
 	if err != nil {

@@ -26,6 +26,15 @@ type Stage struct {
 	// SkipWindowText is the text to display when this stage is skipped.
 	// +optional
 	SkipWindowText string `json:"skipWindowText,omitempty"`
+
+	// +optional
+	FailOnFailedExpressions bool `json:"failOnFailedExpressions,omitempty"`
+	// +optional
+	FailPipeline *bool `json:"failPipeline,omitempty"`
+	// +optional
+	ContinuePipeline *bool `json:"continuePipeline,omitempty"`
+	// +optional
+	CompleteOtherBranchesThenFail *bool `json:"completeOtherBranchesThenFail,omitempty"`
 }
 
 // StageEnabled represents whether this stage is active in a pipeline graph.

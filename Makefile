@@ -38,8 +38,8 @@ all: manager
 # Run tests
 test: generate fmt vet manifests
 ifeq (, $(wildcard ./kubebuilder/.*))
-	curl -L https://go.kubebuilder.io/dl/2.2.0/${OS}/${ARCH} | tar -xz -C .
-	mv ./kubebuilder_2.2.0_${OS}_${ARCH} ./kubebuilder
+	curl -L https://go.kubebuilder.io/dl/2.3.1/${OS}/${ARCH} | tar -xz -C .
+	mv ./kubebuilder_2.3.1_${OS}_${ARCH} ./kubebuilder
 endif
 	export PATH=${PATH}:${PWD}/kubebuilder/bin; \
 	export KUBEBUILDER_ASSETS=${PWD}/kubebuilder/bin; \

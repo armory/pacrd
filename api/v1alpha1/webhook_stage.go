@@ -17,8 +17,6 @@ type Webhook struct {
 	Url           string `json:"url,omitempty"`
 	WebhookMethod string `json:"method,omitempty"`
 	// +optional
-	FailOnFailedExpressions bool `json:"failOnFailedExpressions,omitempty"`
-	// +optional
 	ExpectedArtifacts []Artifact `json:"expectedArtifacts,omitempty"`
 	// +optional
 	StageEnabled `json:"stageEnabled,omitempty"`

@@ -13,14 +13,14 @@ type PacrdConfig struct {
 	// NewRelicLicense (optional) license.
 	NewRelicLicense string
 	// NewRelicApp name (optional)
-	NewRelicAppName	string
+	NewRelicAppName string
 	// FiatServiceAccount (optional) the service account to annotate API calls with.
 	FiatServiceAccount string
 	// SpinnakerServices defines the location of Spinnaker services in your environment.
 	SpinnakerServices
 	//Server config for mTLS
-	Server	server.ServerConfig `json:"server" yaml:"server"`
-	Http    client.Config       `json:"http" yaml:"http"`
+	Server server.ServerConfig `json:"server" yaml:"server"`
+	Http   client.Config       `json:"http" yaml:"http"`
 }
 
 // SpinnakerServices represent the set of services that PaCRD must interface with.

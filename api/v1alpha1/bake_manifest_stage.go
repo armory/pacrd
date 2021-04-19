@@ -2,6 +2,7 @@ package v1alpha1
 
 import (
 	"encoding/json"
+
 	"github.com/fatih/structs"
 )
 
@@ -14,14 +15,6 @@ type BakeManifest struct {
 	// Name is the name given to this stage.
 	Type string `json:"type"`
 
-	// +optional
-	FailOnFailedExpressions bool `json:"failOnFailedExpressions,omitempty"`
-	// +optional
-	FailPipeline *bool `json:"failPipeline,omitempty"`
-	// +optional
-	ContinuePipeline *bool `json:"continuePipeline,omitempty"`
-	// +optional
-	CompleteOtherBranchesThenFail *bool `json:"completeOtherBranchesThenFail,omitempty"`
 	// +optional
 	Namespace string `json:"namespace,omitempty"`
 	// +optional

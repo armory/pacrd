@@ -2,6 +2,7 @@ package v1alpha1
 
 import (
 	"encoding/json"
+
 	"github.com/fatih/structs"
 )
 
@@ -32,7 +33,6 @@ type DeleteManifest struct {
 	// +optional
 	Kinds []KubernetesKind `json:"kinds,omitempty"`
 	//Kinds []SpinnakerKind `json:"kinds,omitempty"`
-
 }
 
 //Not sure where these values are in the service, need to find more but for the moment this are all possible

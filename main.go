@@ -116,14 +116,14 @@ func main() {
 	var eventClient events.EventClient
 	if pacrdConfig.NewRelicLicense == "" {
 		eventClient = new(events.DefaultClient)
-	} else  {
+	} else {
 		var errevent error
 		eventClient, errevent = events.NewNewRelicEventClient(events.EventClientSettings{
 			AppName: pacrdConfig.NewRelicAppName,
 			ApiKey:  pacrdConfig.NewRelicLicense,
 		})
 		if errevent != nil {
-			setupLog.Error(errevent,"unable to create New Relic Application")
+			setupLog.Error(errevent, "unable to create New Relic Application")
 			// Life goes on
 			eventClient = new(events.DefaultClient)
 		}
@@ -133,10 +133,10 @@ func main() {
 	var httpClient *http.Client
 	tlserr := readAndOverwriteTLSPasswords(&pacrdConfig)
 	if tlserr != nil {
-		setupLog.Error(tlserr,"invalid mtls configuration" )
+		setupLog.Error(tlserr, "invalid mtls configuration")
 	} else {
 		if err = pacrdConfig.Http.Init(); err != nil {
-			setupLog.Error(err,"invalid mtls configuration" )
+			setupLog.Error(err, "invalid mtls configuration")
 		}
 	}
 
@@ -154,7 +154,7 @@ func main() {
 		Scheme:          mgr.GetScheme(),
 		SpinnakerClient: spinnakerClient,
 		Recorder:        mgr.GetEventRecorderFor("applications"),
-		EventClient:	 eventClient,
+		EventClient:     eventClient,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Application")
 		os.Exit(1)
@@ -165,7 +165,7 @@ func main() {
 		Scheme:          mgr.GetScheme(),
 		SpinnakerClient: spinnakerClient,
 		Recorder:        mgr.GetEventRecorderFor("pipelines"),
-		EventClient:	 eventClient,
+		EventClient:     eventClient,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Pipeline")
 		os.Exit(1)

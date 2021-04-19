@@ -3,8 +3,9 @@ package v1alpha1
 import (
 	"encoding/json"
 	"fmt"
-	"gotest.tools/assert"
 	"testing"
+
+	"gotest.tools/assert"
 )
 
 func TestMatchStage_ToSpinnakerStage_vs_Deck(t *testing.T) {
@@ -33,7 +34,6 @@ func TestMatchStage_ToSpinnakerStage_vs_Deck(t *testing.T) {
 			Name:  "Manual Judgment",
 			RefID: "1",
 		},
-		FailPipeline: true,
 	}
 
 	deleteManifest := DeleteManifest{
@@ -124,7 +124,6 @@ func TestMatchStage_ToSpinnakerStage_vs_Deck(t *testing.T) {
 				Type:       "manualJudgment",
 			},
 			deckJson: `{
-     "failPipeline": true,
      "judgmentInputs": [],
      "name": "Manual Judgment",
      "notifications": [],

@@ -62,15 +62,6 @@ jobs:
           ./gradlew final docker dockerPush $GRADLE_ARGS
           echo "BUILD_NUMBER=$(./gradlew -Prelease.useLastTag=true $GRADLE_ARGS  printVersion|grep VERSION|awk -F: '{print $2}')" >> $GITHUB_ENV
 
-      - name: Run Xray Scan
-        if: startsWith(github.ref, 'refs/heads/release-') || github.ref == 'refs/heads/master'
-        run: |
-          jfrog rt docker-push armory-docker-local.jfrog.io/armory/$BASE_PROJECT:$BUILD_NUMBER docker-local --build-name=$BASE_PROJECT-armory --build-number=$BUILD_NUMBER $JFROG_ARGS
-          jfrog rt build-publish $BASE_PROJECT-armory $BUILD_NUMBER $JFROG_ARGS
-          jfrog rt build-scan $BASE_PROJECT-armory $BUILD_NUMBER $JFROG_ARGS
-          sleep 30
-          jfrog rt build-scan $BASE_PROJECT-armory $BUILD_NUMBER $JFROG_ARGS
-
       - name: Scan Using Aquasec
         if: startsWith(github.ref, 'refs/heads/release-') || github.ref == 'refs/heads/master'
         uses: docker://docker.io/aquasec/trivy:0.2.1

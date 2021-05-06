@@ -3,179 +3,542 @@
 
 # pacrd
 
-PaCRD (a combination of "Pipelines as Code" and "Custom Resource Definition") is
-a [Kubernetes controller] that manages the lifecycle of Spinnaker applications
-and pipelines as objects within your cluster. PaCRD extends Kubernetes
-functionality to support Spinnaker Application and Pipeline objects that can be
-observed for changes through a mature lifecycle management API.
+PaCRD (a combination of "Pipelines as Code" and "Custom Resource Definition")
+is a [Kubernetes
+controller](https://kubernetes.io/docs/concepts/architecture/controller/) that
+manages the lifecycle of Spinnaker<sup>TM</sup> applications and pipelines as
+objects within your cluster. PaCRD extends Kubernetes functionality to support
+Spinnaker Application and Pipeline objects that can be observed for changes
+through a mature lifecycle management API.
 
-## Development
+With PaCRD you can:
 
-### Pre-Requisites
+- Maintain your Spinnaker pipelines as code with the rest of your Kubernetes
+manifests.
+- Persist Pipeline and Application changes with confidence to your Spinnaker
+cluster.
+- Leverage existing tools like Helm and Kustomize to template your pipelines
+across teams and projects.
 
-- A Kubernetes cluster
-- Go >= 1.13  
-- Kustomize
+To get started right away, check out the [Quick Start](#quick-start) section
+for installation instructions.
 
-### Installing and updating CRDs During Development
+## Prerequisites
 
-CRD definitions are generated and stored in the `config/crd/bases/` directory.
-In order for your controller to pick up changes in your `api/` models you will
-need to re-generatre them and apply them to the target cluster. You can most
-easily do this with the following command:
+To use PaCRD, make sure you meet the following requirements:
 
+- Have a working Kubernetes 1.11+ cluster
+- Have a working Spinnaker installation
+  - Although there is no minimum version required for this experiment, Armory
+  recommends using the latest release
+- Have permissions to install CRDs, create RBAC roles, and create service
+accounts
+
+## Quick Start
+
+Download the current `pacrd` manifest to your local machine:
+
+```bash
+curl -fsSL https://engineering.armory.io/manifests/pacrd-1.0.1.yaml > pacrd-1.0.1.yaml
 ```
-make manifests &&\
-  kubectl apply -f config/crd/bases/
-```
 
-You should see something like the following output:
+Then, inspect the manifest to make sure it is compatible with your cluster.
 
-```
-/Users/my-user/bin/controller-gen "crd:trivialVersions=true" rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
-customresourcedefinition.apiextensions.k8s.io/applications.pacrd.armory.spinnaker.io configured
-customresourcedefinition.apiextensions.k8s.io/pipelines.pacrd.armory.spinnaker.io configured
-```
+Create the following files in the directory where you downloaded the `pacrd`
+manifest to customize the installation: `kustomization.yaml` and `patch.yaml`.
 
-### Local Development
-
-When making and testing changes to the controller locally it's helpful to be
-able to run the controller and connect to a running Kubernetes cluster. In
-order to run the controller locally you will need to:
-
-- Create a configuration file for PaCRD:
+Start by creating a `kustomization.yaml` file, which contains
+the installation settings:
 
 ```yaml
-# file: /path/to/pacrd/pacrd.yaml
-#NewRelicLicense: <license>
-#FiatServiceAccount: <fiatAccount>
-spinnakerServices:
-  front50: http://localhost:8080
-  orca: http://localhost:8083
+# file: kustomization.yaml
+resources:
+  - pacrd-1.0.1.yaml
+patchesStrategicMerge:
+  - patch.yaml
+namespace: spinnaker  # Note: you should change this value if you are _not_ deploying into the `spinnaker` namespace.
 ```
 
-- Port-forward Front50 and Orca to your local machine:
+Next, create a `patch.yaml` file that contains your `pacrd` config. If you are
+not deploying into the `spinnaker` namespace, update the `front50` and `orca`
+keys:
 
-```sh
-kubectl port-forward service/spin-front50 8080
+```yaml
+# file: patch.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pacrd-config
+  namespace: spinnaker
+data:
+  pacrd.yaml: |
+    spinnakerServices:
+      # NOTE: change `spinnaker` to your namespace name here
+      front50: http://spin-front50.spinnaker:8080
+      orca: http://spin-orca.spinnaker:8083
+    # OPTIONAL: uncomment the next line to configure a Fiat service account, it should be at the same level that spinnakerServices.
+    # fiatServiceAccount: my-service-account
 ```
 
-```sh
-kubectl port-forward service/spin-orca 8083
+When you are ready, apply the `pacrd` manifest to your cluster:
+
+```bash
+# If using `kubectl` >= 1.14
+kubectl apply -k .
+
+# Otherwise, use `kustomize` and `kubectl` toegether
+kustomize build | kubectl apply -f -
 ```
 
-- (Optional) Port-forward Deck and Gate to your local machine:
+## Usage
 
-```sh
-kubectl port-forward service/spin-gate 8084
+Once you have PaCRD installed and running in your cluster, you can define your applications and pipelines. Then apply them to the cluster.
+
+While this product is in an [**Experimental**]({{< ref "release-definitions" >}}) state, [kind](https://github.com/kubernetes-sigs/kind) objects for PaCRD
+live under the `pacrd.armory.spinnaker.io/v1alpha1` version moniker.
+
+## Applications
+
+In Spinnaker, an Application is a logical construct that allows you to group
+resources under a single name. You can read more about applications in the
+Spinnaker [docs](https://www.spinnaker.io/guides/user/applications/#about-applications).
+
+For available Application configuration options check out the
+{{< linkWithTitle "pacrd-crd-docs.md" >}}.
+
+### Creating an application
+
+In Kubernetes, define your application in an `application.yaml` file.  The configuration fields are the same as what you see when you [create an application](https://www.spinnaker.io/guides/user/applications/create/#create-an-application) using the Spinnaker UI. The following example defines an application named "myapplicationname".
+
+*Note: Application names must adhere to both [Kubernetes](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/)
+__and__ Spinnaker name standards.*
+
+```yaml
+#file: application.yaml
+apiVersion: pacrd.armory.spinnaker.io/v1alpha1
+kind: Application
+metadata:
+  name: pacrd-pipeline-stages-samples
+spec:
+  email: test@armory.io
+  description: Description
 ```
 
-```sh
-kubectl port-forward service/spin-deck 9000
+Create the application in your cluster by running:
+
+```bash
+kubectl apply -f application.yaml
 ```
 
-- Start the controller:
+Check on the status of your application by using either the `get` or `describe`
+commands. `kubectl` recognizes either `app` or `application` for the resource
+kind:
 
-```sh
-make run
+```bash
+kubectl get app myapplicationname
+
+# or kubectl get application myapplicationname
 ```
 
-If you've configured your environment successfully you should see the
-following output:
+The command returns information similar to the this:
 
 ```
-/Users/my-user/bin/controller-gen object:headerFile=./hack/boilerplate.go.txt paths="./..."
-go fmt ./...
-go vet ./...
-/Users/my-user/bin/controller-gen "crd:trivialVersions=true" rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
-go run ./main.go ./configfile.go
-2020-03-20T08:20:12.709-0700    INFO    setup   Initializing PaCRD configuration
-2020-03-20T08:20:13.910-0700    INFO    controller-runtime.metrics      metrics server is starting to listen    {"addr": ":8080"}
-2020-03-20T08:20:13.911-0700    INFO    setup   starting manager
-2020-03-20T08:20:13.911-0700    INFO    controller-runtime.manager      starting metrics server {"path": "/metrics"}
-2020-03-20T08:20:14.016-0700    INFO    controller-runtime.controller   Starting EventSource    {"controller": "application", "source": "kind source: /, Kind="}
-2020-03-20T08:20:14.016-0700    INFO    controller-runtime.controller   Starting EventSource    {"controller": "pipeline", "source": "kind source: /, Kind="}
-2020-03-20T08:20:14.120-0700    INFO    controller-runtime.controller   Starting Controller     {"controller": "pipeline"}
-2020-03-20T08:20:14.120-0700    INFO    controller-runtime.controller   Starting Controller     {"controller": "application"}
-2020-03-20T08:20:14.221-0700    INFO    controller-runtime.controller   Starting workers        {"controller": "application", "worker count": 1}
-2020-03-20T08:20:14.221-0700    INFO    controller-runtime.controller   Starting workers        {"controller": "pipeline", "worker count": 1}
-2020-03-20T08:20:14.221-0700    INFO    controllers.Application reconciling application {"application": "my-user/api-server"}
+NAME                URL                                                             LASTCONFIGURED   STATUS
+myapplicationname   http://spinnaker.io/#/applications/myapplicationname/clusters   7m26s            Created
 ```
 
-### Cutting a Release
+### Updating an application
 
-At this time releases for PaCRD are done somewhat manually. The overall
-processes looks like:
+You can update in one of two ways:
 
-1. Make and merge a  pull request to a `release-*` branch (e.g. `release-0.4.x`)
-1. Build and publish the PaCRD manifest from your local machine
-1. Update documentation if needed
+- Reapply the application manifest in your repository
+   -  `kubectl apply -f application.yaml`
+- Edit the application manifest in-cluster
+   - `kubectl edit app myapplicationname`
 
-#### Publish PaCRD Manifest
+When you update your application in Kubernetes, the changes propagate into
+Spinnaker. If an error occurs during the update, your application may show an
+`ErrorFailedUpdate` state. You can see the details of that failure by describing
+the resource and looking in the "Events" section:
 
-If you need to find out what the current releases are you can run the following
-`make` target:
-
-```
-make list-manifest-releases
-```
-
-You should see output like the following:
-
-```
-aws --region=us-east-1 --profile=prod s3 ls s3://engineering.armory.io/manifests/pacrd-
-2020-03-10 12:53:48      32000 pacrd-0.1.0.yaml
-2020-03-11 15:13:32      32063 pacrd-0.1.1.yaml
+```bash
+kubectl describe app myapplicationname
 ```
 
-Next, release a new version of the manifest with the following `make` target,
-where `RELEASE` is set to the desired version:
+### Deleting an application
 
-```
-make publish-public-manifest RELEASE=0.2.0
-```
+You can delete an application in one of two ways:
 
-You should see output like the following:
+- Reapply the application manifest in your repository
+   - `kubectl delete -f application.yaml`
+- Delete the application directly
+   - `kubectl delete app myapplicationname`
 
-```
-/Users/my-user/bin/controller-gen "crd:trivialVersions=true" rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
-cd config/manager && kustomize edit set image controller=armory/pacrd:61bb144-dirty
-kustomize build config/default > pacrd-0.2.0.yaml
-aws --region=us-east-1 --profile=prod s3 cp pacrd-0.2.0.yaml s3://engineering.armory.io/manifests/pacrd-0.2.0.yaml
-upload: ./pacrd-0.2.0.yaml to s3://engineering.armory.io/manifests/pacrd-0.2.0.yaml
-```
+When you delete your application in Kubernetes, the deletion propagates into
+Spinnaker. If an error occurs during deletion, your application may show an
+`ErrorFailedDelete` state. You can see the details of that failure by describing
+the resource and looking in the "Events section":
 
-### Generating API Documentation
-
-This project has the ability to generate human-readable documentation for
-inclusion in Armory's doc site.
-
-We make the following assumptions:
-
-- You have the `gen-crd-api-reference-docs` tool installed
-  - If you don't, run `make install-doc-generator`
-- `$GOBIN` is defined and in your `$PATH`
-- Your checkout of the Armory docs project is at `~/armory/documentation`
-  - If it is not, you can set the `DOCS_PROJECT` variable when running the generation command
-
-To generate documentation, run the following `make` target:
-
-```
-make generate-docs  # optionally supply DOCS_PROJECT=your/docs/checkout/path
+```bash
+kubectl describe app myapplicationname
 ```
 
-Then create a pull-request to the docs project with your updates!
+## Pipelines
 
-### Publishing a Container Manually
+Pipelines allow you to encode the process that your team follows to take a
+service from commit to a desired environment, such as production. You can
+read more in the Spinnaker [Pipelines](https://www.spinnaker.io/concepts/pipelines/) guide.
 
-#### Publish PaCRD Container
+View Pipeline configuration options in the {{< linkWithTitle "pacrd-crd-docs.md" >}}.
 
-You can build and publish the PaCRD container assuming you've logged into
-DockerHub and your user has access to the `armory` account. You can build
-and publish the container like so:
+### Creating pipelines
 
-```sh
-make docker-build docker-publish
+In Kubernetes, define your pipeline in a `pipeline.yaml` file. The configuration fields are the same as what you see when you [create a pipeline](https://www.spinnaker.io/guides/user/pipeline/managing-pipelines/#create-a-pipeline) using the Spinnaker UI. The following example defines a simple pipeline named "myapplicationpipeline", which bakes a manifest and prompts for a manual judgment.
+
+>Pipeline names should follow the Kubernetes [Object Names and IDs](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names) naming conventions.
+
+This example assumes that you've created the `myapplicationname`
+application from the [previous section](#applications). Create one before
+proceeding if you have not done so already.
+
+```yaml
+# file: deploy-nginx.yaml
+apiVersion: pacrd.armory.spinnaker.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: pacrd-deploymanifest-integration-samples
+spec:
+  description: A sample showing how to define artifacts.
+  application: &app-name pacrd-pipeline-stages-samples
+  stages:
+    - type: deployManifest
+      properties:
+        name: Deploy text manifest
+        refId: "1"
+        requisiteStageRefIds: [ ]
+        account: spinnaker
+        cloudProvider: kubernetes
+        moniker:
+          app: *app-name
+        skipExpressionEvaluation: true
+        source: text
+        manifests:
+          - |
+            apiVersion: apps/v1
+            kind: Deployment
+            metadata:
+              name: nginx-deployment
+              labels:
+                app: nginx
+            spec:
+              replicas: 2
+              selector:
+                matchLabels:
+                  app: nginx
+              template:
+                metadata:
+                  labels:
+                    app: nginx
+                spec:
+                  containers:
+                  - name: nginx
+                    image: nginx:1.14.2
+                    ports:
+                    - containerPort: 80
 ```
 
-This will publish a PaCRD container with the current git commit sha as the label.
+Create your pipeline in your cluster:
+
+```bash
+kubectl apply -f pipeline.yaml
+```
+
+Check on the status of your pipeline by using either the `get` or `describe`
+commands. `kubectl` will recognize either `pipe` or `pipeline` for the resource
+kind:
+
+```bash
+kubectl get pipe myapplicationpipeline
+
+# or ... kubectl get pipeline myapplicationpipeline
+```
+
+The command returns information similar to the this:
+
+```
+NAME                    STATUS    LASTCONFIGURED   URL
+myapplicationpipeline   Updated   5s               http://spinnaker.company.com/#/applications/myapplicationname/executions/configure/f1eb82ce-5a8f-4b7a-9976-38e4aa022702
+```
+
+A `describe` call can give you additional contextual information about the
+status of your pipeline:
+
+```bash
+kubectl describe pipeline myapplicationpipeline
+```
+
+The command returns information similar to the this::
+
+```
+Name:         myapplicationpipeline
+API Version:  pacrd.armory.spinnaker.io/v1alpha1
+Kind:         Pipeline
+Metadata:
+  # omitted for brevity
+Spec:
+  # omitted for brevity
+Status:
+  Id:               f1eb82ce-5a8f-4b7a-9976-38e4aa022702
+  Last Configured:  2020-03-09T15:55:27Z
+  Phase:            Updated
+  URL:              http://localhost:9000/#/applications/myapplicationname/executions/configure/f1eb82ce-5a8f-4b7a-9976-38e4aa022702
+Events:
+  Type     Reason                 Age                From       Message
+  ----     ------                 ----               ----       -------
+  Normal   Updated                94s                pipelines  Pipeline successfully created in Spinnaker.
+  Warning  ErrorUpdatingPipeline  93s                pipelines  Bad Request: The provided id f1eb82ce-5a8f-4b7a-9976-38e4aa022702 doesn't match the pipeline id null
+  Normal   Updated                91s (x2 over 91s)  pipelines  Pipeline successfully updated in Spinnaker.
+```
+
+### Updating pipelines
+
+You can update a pipeline in one of two ways:
+
+- Reapply the pipeline manifest in your repository
+   - `kubectl apply -f pipeline.yaml`
+- Edit the pipeline manifest in-cluster
+   - `kubectl edit pipeline myapplicationpipeline`
+
+When you update your pipeline in Kubernetes, the changes propagate into
+Spinnaker. If an error occurs during the update, your pipeline may show an
+`ErrorFailedUpdate` state. You can see the details of that failure by describing
+the resource and looking in the "Events" section:
+
+```bash
+kubectl describe pipeline myapplicationpipeline
+```
+
+### Deleting pipelines
+
+You can delete a pipeline in one of two ways:
+
+- Delete the pipeline manifest from your repository definition
+   - `kubectl delete -f pipeline.yaml`
+- Delete the pipeline directly
+   - `kubectl delete pipeline myapplicationpipeline`
+
+When you delete your pipeline in Kubernetes, the deletion propagates into
+Spinnaker. If an error occurred during deletion, then your pipeline may show an
+`ErrorFailedDelete` state. You can see the details of that failure by describing
+the resource and looking in the "Events section":
+
+```bash
+kubectl describe pipeline myapplicationpipeline
+```
+
+## Artifacts
+
+An [artifact](https://www.spinnaker.io/reference/artifacts-with-artifactsrewrite/) is an object that references an external
+resource. Examples include a Docker container, a file in source control, an AMI,
+or a binary blob in S3. Artifacts in PaCRD come in two types:
+
+- **Definitions** contain all necessary information to locate an artifact.
+- **References** contain enough information to find a Definition.
+
+### Defining Artifacts
+
+Define your pipeline artifacts in a section called `expected artifacts`. The
+following example defines a single container image that the pipeline expects as
+an input to the BakeManifest stage:
+
+```yaml
+apiVersion: pacrd.armory.spinnaker.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: my-pipeline
+spec:
+  description: A sample showing how to define artifacts.
+  application: my-application
+  expectedArtifacts:
+    - id: &image-id my-application-docker-image
+      displayName: *image-id
+      matchArtifact:
+        type: docker/image
+        properties:
+          name: my-organization/my-container
+          artifactAccount: docker-registry
+  stages:
+    - type: bakeManifest
+      properties:
+        name: Bake Application
+        refId: "1"
+        outputName: myManifest
+        templateRenderer: helm2
+        inputArtifacts:
+          - id: *image-id
+```
+
+Each `matchArtifact` block contains:
+
+- `type`: **required**; the artifact classification; see the [Types of Artifacts](https://www.spinnaker.io/reference/artifacts-with-artifactsrewrite/types/overview/) section in the Spinnaker documentation for supported types
+- `properties`: dictionary of key-value pairs appropriate for that artifact
+
+PaCRD only validates officially supported artifacts. PaCRD does not validate custom artifacts or artifacts defined [via Plugins](https://www.spinnaker.io/guides/user/plugins/user-guide/).
+
+### Referencing Artifacts
+
+Reference artifacts in the `inputArtifacts` section of a pipeline stage. You
+can use either the artifact `id` or `displayName`. If you are new to using
+artifacts, you can use the `displayName` value, which is most often what appears
+when the Spinnaker UI displays your pipeline.
+
+The following example defines two artifacts in the `expectedArtifacts` section. Each artifact is then referenced in the `inputArtifacts` section of the `bakeManifest` stage. The first is declared with `id` and the second with `displayName`.
+
+```yaml
+apiVersion: pacrd.armory.spinnaker.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: my-pipeline
+spec:
+  description: A sample showing how to reference artifacts.
+  application: my-application
+  expectedArtifacts:
+    - id: first-inline-artifact-id
+      displayName: My First Inline Artifact Id
+      matchArtifact:
+        type: embedded/base64
+        properties:
+          name: my-inline-artifact
+    - id: second-inline-artifact-id
+      displayName: My Second Inline Artifact
+      matchArtifact:
+        type: embedded/base64
+        properties:
+          name: my-second-inline-artifact
+  stages:
+    - type: bakeManifest
+      properties:
+        name: Bake Application
+        refId: "1"
+        outputName: myManifest
+        templateRenderer: helm2
+        inputArtifacts:
+          - id: first-inline-artifact-id
+          - displayName: My Second Inline Artifact
+```
+
+PaCRD validates that the `inputArtifacts` referenced in the `bakeManifest` stage
+correspond to exactly one artifact declared in the `expectedArtifacts` section
+of the CRD.
+
+PaCRD throws a `PipelineValidationFailed` error when it can't find an input
+artifact in the list of expected artifacts. You can see which input artifact
+failed validation by executing a describe call against the pipeline under
+creation. If you use the above example but replace the `id` reference with
+`a-nonsense-value`, pipeline validation fails.
+
+Execute `kubectl describe`:
+
+```bash
+kubectl describe pipeline my-pipeline
+```
+
+Expected output displays which input artifact failed validation:
+
+```
+Events:
+  Type     Reason                    Age                    From       Message
+  ----     ------                    ----                   ----       -------
+  Normal   Updated                   2m53s (x2 over 2m54s)  pipelines  Pipeline successfully updated in Spinnaker.
+  Warning  PipelineValidationFailed  0s (x4 over 3s)        pipelines  artifact with id "a-nonsense-value" and name "" could not be found for this pipeline
+```
+
+## Enabling monitoring with New Relic
+
+If you want to monitor how PaCRD is used and the errors encountered, you can
+enable New Relic integration. You can either send this data to your New Relic
+account or to Armory's New Relic account. If you choose to share the data with
+Armory, it helps us improve the product and provide better support. For
+information about what data is sent and how it is used, contact Armory, or
+simply enable it with your New Relic account first.
+
+To enable this integration, add the New Relic license to the `patch.yaml` file
+as shown below. If you send it to Armory's New Relic account, we will give you
+a license to use, otherwise use your New Relic account's license.
+
+```yaml
+# file: patch.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pacrd-config
+  namespace: spinnaker
+data:
+  pacrd.yaml: |
+    spinnakerServices:
+      # NOTE: change `spinnaker` to your namespace name here
+      front50: https://spin-front50.spinnaker:8080
+      orca: https://spin-orca.spinnaker:8083
+      # fiatServiceAccount: <fiatServiceAccount>
+      newRelicLicense: <newRelicLicense>
+```
+
+Since reconciliation happens multiple times per minute, Armory sends metrics
+only during the first three minutes of each hour.   Error messages contain
+obfuscated URLs, application names, and pipeline names.
+
+By default the application name will be `pacrd`, if you want to change this you
+can add `NewRelicAppName` property at the same level of `newRelicLicense` and
+add your own custom application name.
+
+Here's an example of error stack traces:
+
+![](./docs/new_relic.png)
+
+## Known Limitations
+
+## v0.1.x - v0.9.x
+
+### Applications
+
+- Deleting an application in Kubernetes triggers the following behavior:
+
+    - Delete the application in Kubernetes.
+    - Delete the application in Spinnaker.
+    - Delete pipelines associated with the application _in Spinnaker only_.
+
+### Pipelines
+
+- Pipeline stages must be defined with a `type` key for the stage name and a
+key of the same name where all stage options live. For example, for the
+"Bake Manifest" stage you would structure your definition like this:
+
+```yaml
+# ...
+stages:
+  - type: BakeManifest
+    bakeManifest:
+      name: Bake the Bread
+      # ...
+# ...
+```
+
+## v0.1.x - v0.4.0
+
+### Applications
+
+- Documentation for available Application spec fields must be
+found in the installation manifest for this controller. You can do so by
+grepping for `applications.pacrd.armory.spinnaker.io` in the installation
+manifest. Fields are documented under `spec.validation.openAPIV3Schema`.
+
+### Pipelines
+
+- Documentation for available Pipeline spec fields must be
+found in the installation manifest for this controller. You can do so by
+grepping for `pipelines.pacrd.armory.spinnaker.io` in the installation
+manifest. Fields are documented under `spec.validation.openAPIV3Schema`.
+
+## Contributing
+
+Please see the [CONTRIBUTING.md](./CONTRIBUTING.md) doc.

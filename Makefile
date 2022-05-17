@@ -3,7 +3,7 @@
 RELEASE ?= ""  # Must be set at runtime
 IMG ?= armory/pacrd:${RELEASE}
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
-CRD_OPTIONS ?= "crd:trivialVersions=true"
+CRD_OPTIONS ?= "crd:crdVersions=v1"
 DOCS_PROJECT ?= ~/armory/documentation
 OS=$(shell go env GOOS)
 ARCH=$(shell go env GOARCH)

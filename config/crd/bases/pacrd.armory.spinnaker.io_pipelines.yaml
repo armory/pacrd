@@ -1,6 +1,6 @@
 
 ---
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
@@ -8,18 +8,6 @@ metadata:
   creationTimestamp: null
   name: pipelines.pacrd.armory.spinnaker.io
 spec:
-  additionalPrinterColumns:
-  - JSONPath: .status.phase
-    description: Status
-    name: status
-    type: string
-  - JSONPath: .status.lastConfigured
-    description: Last Configured
-    name: lastConfigured
-    type: date
-  - JSONPath: .status.url
-    name: URL
-    type: string
   group: pacrd.armory.spinnaker.io
   names:
     kind: Pipeline
@@ -29,189 +17,200 @@ spec:
     - pipe
     singular: pipeline
   scope: Namespaced
-  subresources:
-    status: {}
-  validation:
-    openAPIV3Schema:
-      description: Pipeline is the Schema for the pipelines API
-      properties:
-        apiVersion:
-          description: 'APIVersion defines the versioned schema of this representation
-            of an object. Servers should convert recognized schemas to the latest
-            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
-          type: string
-        kind:
-          description: 'Kind is a string value representing the REST resource this
-            object represents. Servers may infer this from the endpoint the client
-            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
-          type: string
-        metadata:
-          type: object
-        spec:
-          description: PipelineSpec defines the desired state of Pipeline
-          properties:
-            allowParallelExecutions:
-              description: AllowParallelExecutions TODO
-              type: boolean
-            application:
-              description: Application is a reference to the application that owns
-                this pipeline.
-              type: string
-            description:
-              description: Description tells the user what this pipeline is for.
-              type: string
-            executionEngine:
-              description: ExecutionEngine TODO
-              type: string
-            expectedArtifacts:
-              items:
-                description: Artifact is an object that references an external resource.
-                  It could be a Docker container, file in source control, AMI, or
-                  binary blob in S3, etc.
-                properties:
-                  defaultArtifact:
-                    description: If your artifact either wasn't supplied from a trigger,
-                      or it wasn't found in a prior execution, the artifact specified
-                      here will end up in your pipeline's execution context.
-                    properties:
+  versions:
+  - additionalPrinterColumns:
+    - description: Status
+      jsonPath: .status.phase
+      name: status
+      type: string
+    - description: Last Configured
+      jsonPath: .status.lastConfigured
+      name: lastConfigured
+      type: date
+    - jsonPath: .status.url
+      name: URL
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: Pipeline is the Schema for the pipelines API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: PipelineSpec defines the desired state of Pipeline
+            properties:
+              allowParallelExecutions:
+                description: AllowParallelExecutions TODO
+                type: boolean
+              application:
+                description: Application is a reference to the application that owns
+                  this pipeline.
+                type: string
+              description:
+                description: Description tells the user what this pipeline is for.
+                type: string
+              executionEngine:
+                description: ExecutionEngine TODO
+                type: string
+              expectedArtifacts:
+                items:
+                  description: Artifact is an object that references an external resource.
+                    It could be a Docker container, file in source control, AMI, or
+                    binary blob in S3, etc.
+                  properties:
+                    defaultArtifact:
+                      description: If your artifact either wasn't supplied from a
+                        trigger, or it wasn't found in a prior execution, the artifact
+                        specified here will end up in your pipeline's execution context.
                       properties:
-                        type: object
-                      type:
-                        type: string
-                    required:
-                    - type
-                    type: object
-                  displayName:
-                    description: DisplayName tells Spinnaker how to render this artifact
-                      in the UI.
-                    type: string
-                  id:
-                    description: ID is a unique identifier for this artifact. IDs
-                      must only be unique for the pipeline they are declared in.
-                    type: string
-                  matchArtifact:
-                    description: "This specifies which fields in your incoming artifact
-                      to match against. Every field that you supply will be used to
-                      match against all incoming artifacts. If all specified fields
-                      match, the incoming artifact is bound to your pipeline context.
-                      \n See the [reference](https://www.spinnaker.io/reference/artifacts/in-pipelines/#expected-artifacts)
-                      for more information."
-                    properties:
-                      properties:
-                        type: object
-                      type:
-                        type: string
-                    required:
-                    - type
-                    type: object
-                  useDefaultArtifact:
-                    description: If true, requires DefaultArtifact to be defined with
-                      a fallback artifact to use.
-                    type: boolean
-                  usePriorArtifact:
-                    description: "Attempt to match against an artifact in the prior
-                      pipeline execution's context. \n See the [reference](https://www.spinnaker.io/reference/artifacts/in-pipelines)
-                      for more information."
-                    type: boolean
-                required:
-                - displayName
-                - id
-                type: object
-              type: array
-            keepWaitingPipelines:
-              description: KeepWaitingPipelines TODO
-              type: boolean
-            limitConccurent:
-              description: LimitConcurrent TODO
-              type: boolean
-            parameterConfig:
-              items:
-                properties:
-                  default:
-                    type: string
-                  description:
-                    type: string
-                  hasOptions:
-                    type: boolean
-                  label:
-                    type: string
-                  name:
-                    type: string
-                  options:
-                    items:
-                      properties:
-                        value:
+                        properties:
+                          type: object
+                        type:
                           type: string
                       required:
-                      - value
+                      - type
                       type: object
-                    type: array
-                  pinned:
-                    type: boolean
+                    displayName:
+                      description: DisplayName tells Spinnaker how to render this
+                        artifact in the UI.
+                      type: string
+                    id:
+                      description: ID is a unique identifier for this artifact. IDs
+                        must only be unique for the pipeline they are declared in.
+                      type: string
+                    matchArtifact:
+                      description: "This specifies which fields in your incoming artifact
+                        to match against. Every field that you supply will be used
+                        to match against all incoming artifacts. If all specified
+                        fields match, the incoming artifact is bound to your pipeline
+                        context. \n See the [reference](https://www.spinnaker.io/reference/artifacts/in-pipelines/#expected-artifacts)
+                        for more information."
+                      properties:
+                        properties:
+                          type: object
+                        type:
+                          type: string
+                      required:
+                      - type
+                      type: object
+                    useDefaultArtifact:
+                      description: If true, requires DefaultArtifact to be defined
+                        with a fallback artifact to use.
+                      type: boolean
+                    usePriorArtifact:
+                      description: "Attempt to match against an artifact in the prior
+                        pipeline execution's context. \n See the [reference](https://www.spinnaker.io/reference/artifacts/in-pipelines)
+                        for more information."
+                      type: boolean
                   required:
-                    type: boolean
-                required:
-                - name
-                type: object
-              type: array
-            stages:
-              description: Stages TODO
-              items:
-                properties:
+                  - displayName
+                  - id
+                  type: object
+                type: array
+              keepWaitingPipelines:
+                description: KeepWaitingPipelines TODO
+                type: boolean
+              limitConccurent:
+                description: LimitConcurrent TODO
+                type: boolean
+              parameterConfig:
+                items:
                   properties:
-                    type: object
-                  type:
-                    type: string
-                type: object
-              type: array
-            triggers:
-              description: Triggers represent the ways in which
-              items:
-                properties:
+                    default:
+                      type: string
+                    description:
+                      type: string
+                    hasOptions:
+                      type: boolean
+                    label:
+                      type: string
+                    name:
+                      type: string
+                    options:
+                      items:
+                        properties:
+                          value:
+                            type: string
+                        required:
+                        - value
+                        type: object
+                      type: array
+                    pinned:
+                      type: boolean
+                    required:
+                      type: boolean
+                  required:
+                  - name
+                  type: object
+                type: array
+              stages:
+                description: Stages TODO
+                items:
                   properties:
-                    type: object
-                  type:
-                    type: string
-                required:
-                - type
-                type: object
-              type: array
-          required:
-          - stages
-          type: object
-        status:
-          description: PipelineStatus defines the observed state of Pipeline
-          properties:
-            id:
-              description: ID represents the Spinnaker generated id for this pipeline
-              type: string
-            lastConfigured:
-              description: LastConfigured represents the last time the operator updated
-                this pipeline in Spinnaker.
-              format: date-time
-              type: string
-            phase:
-              description: Phase is the current phase of pipeline reconciliation.
-              enum:
-              - ErrorNotFound
-              - Creating
-              - ErrorFailedToCreate
-              - Created
-              - Deleting
-              - ErrorDeletingPipeline
-              - Updated
-              - ErrorUpdatingPipeline
-              - PipelineValidationFailed
-              type: string
-            url:
-              type: string
-          type: object
-      type: object
-  version: v1alpha1
-  versions:
-  - name: v1alpha1
+                    properties:
+                      type: object
+                    type:
+                      type: string
+                  type: object
+                type: array
+              triggers:
+                description: Triggers represent the ways in which
+                items:
+                  properties:
+                    properties:
+                      type: object
+                    type:
+                      type: string
+                  required:
+                  - type
+                  type: object
+                type: array
+            required:
+            - stages
+            type: object
+          status:
+            description: PipelineStatus defines the observed state of Pipeline
+            properties:
+              id:
+                description: ID represents the Spinnaker generated id for this pipeline
+                type: string
+              lastConfigured:
+                description: LastConfigured represents the last time the operator
+                  updated this pipeline in Spinnaker.
+                format: date-time
+                type: string
+              phase:
+                description: Phase is the current phase of pipeline reconciliation.
+                enum:
+                - ErrorNotFound
+                - Creating
+                - ErrorFailedToCreate
+                - Created
+                - Deleting
+                - ErrorDeletingPipeline
+                - Updated
+                - ErrorUpdatingPipeline
+                - PipelineValidationFailed
+                type: string
+              url:
+                type: string
+            type: object
+        type: object
     served: true
     storage: true
+    subresources:
+      status: {}
 status:
   acceptedNames:
     kind: ""
